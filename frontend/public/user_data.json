@@ -1,0 +1,76 @@
+{
+    "predictions": [
+        {
+            "timestamp": "2025-05-27T22:19:37.741683",
+            "input": {
+                "Income": 54637.25,
+                "Age": 49,
+                "Dependents": 0,
+                "Occupation": "Self_Employed",
+                "City_Tier": "Tier_1",
+                "Rent": 13391.17,
+                "Loan_Repayment": 0.0,
+                "Insurance": 2206.49,
+                "Groceries": 6658.77,
+                "Transport": 2636.97,
+                "Eating_Out": 1651.8,
+                "Entertainment": 1536.18,
+                "Utilities": 2911.79,
+                "Healthcare": 1546.91,
+                "Education": 0.0,
+                "Miscellaneous": 831.53,
+                "Desired_Savings_Percentage": 13.89,
+                "Disposable_Income": 11265.63,
+                "Potential_Savings_Groceries": 1685.7,
+                "Potential_Savings_Transport": 328.89,
+                "Potential_Savings_Eating_Out": 465.77,
+                "Potential_Savings_Entertainment": 195.15,
+                "Potential_Savings_Utilities": 678.29,
+                "Potential_Savings_Healthcare": 67.68,
+                "Potential_Savings_Education": 0.0,
+                "Potential_Savings_Miscellaneous": 85.74,
+                "Savings_Rate": 0.1389,
+                "Actual_Savings_Potential": 3200.0,
+                "Essential_Expenses": 22000.0,
+                "Essential_Expense_Ratio": 0.5,
+                "Non_Essential_Income": 10000.0,
+                "Expense_Efficiency": 0.28,
+                "Total_Expenses": 30000.0,
+                "Debt_to_Income_Ratio": 0.0,
+                "Financial_Stress_Score": 0.25,
+                "Occupation_Retired": 0,
+                "Occupation_Self_Employed": 1,
+                "Occupation_Student": 0,
+                "City_Tier_Tier_2": 0,
+                "City_Tier_Tier_3": 0,
+                "Age_Group_Mid_Career": 1,
+                "Age_Group_Pre_Retirement": 0,
+                "Age_Group_Senior": 0,
+                "Age_Group_Young_Adult": 0,
+                "Income_Bracket_Low_Income": 0,
+                "Income_Bracket_Lower_Mid": 0,
+                "Income_Bracket_Middle": 1,
+                "Income_Bracket_Upper_Mid": 0,
+                "Savings_Difficulty_Moderate": 0,
+                "Savings_Difficulty_Very_Hard": 0,
+                "Savings_Difficulty_nan": 1
+            },
+            "output": {
+                "savings_model": {
+                    "can_achieve_savings": true,
+                    "confidence": 0.9999999403953552
+                },
+                "amount_model": {
+                    "recommended_savings": 102038.546875
+                },
+                "multi_task_model": {
+                    "can_achieve_savings": true,
+                    "savings_confidence": 0.9999930262565613,
+                    "recommended_savings_amount": 113639.4375,
+                    "financial_risk": true,
+                    "risk_score": 0.8489888310432434
+                }
+            }
+        }
+    ]
+}

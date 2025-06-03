@@ -1,0 +1,6 @@
+flask
+numpy
+tensorflow
+google-genai
+python-dotenv
+supabase

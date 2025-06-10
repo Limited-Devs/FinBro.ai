@@ -43,6 +43,24 @@ const Dashboard = () => {
     { month: 'Jun', actual: 3500, target: 3200 },
   ]
 
+  const highestNonEssentialExpense = useMemo(() => {
+    if (!displayUserData) return null
+    
+    // Define non-essential expense categories
+    const nonEssentialExpenses = [
+      { name: 'Entertainment', value: displayUserData.Entertainment || 0 },
+      { name: 'Eating Out', value: displayUserData.Eating_Out || 0 },
+      { name: 'Miscellaneous', value: displayUserData.Miscellaneous || 0 }
+    ]
+    
+    // Find the highest non-essential expense
+    const highest = nonEssentialExpenses.reduce((max, expense) => 
+      expense.value > max.value ? expense : max
+    )
+    
+    return highest.value > 0 ? highest.name : 'non-essential'
+  }, [displayUserData])
+
   if (isLoading) {
     return (
       <div className="p-6 space-y-6">
@@ -212,7 +230,7 @@ const Dashboard = () => {
             <CardTitle>AI Recommended Action</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>Consider focusing on reducing <span className="font-semibold">{/* TODO: Add dynamic suggestion, e.g., highest non-essential expense */}</span> expenses. Our AI suggests potential savings of <span className="font-semibold">${mlDisplayResults.multi_task_model?.recommended_savings_amount?.toLocaleString()}</span> are possible.</p>
+            <p>Consider focusing on reducing <span className="font-semibold">{highestNonEssentialExpense}</span> expenses. Our AI suggests potential savings of <span className="font-semibold">${mlDisplayResults.multi_task_model?.recommended_savings_amount?.toLocaleString()}</span> are possible.</p>
             <p className="text-sm text-muted-foreground mt-2">This is an AI-generated suggestion.</p>
           </CardContent>
         </Card>

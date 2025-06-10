@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Test script to verify Supabase integration
 Run this script to test if Supabase is properly configured

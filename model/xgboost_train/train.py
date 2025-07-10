@@ -224,20 +224,27 @@ def train_models(X, y_dict):
 def save_models_and_metadata(models, label_encoders, feature_cols):
     """Save trained models and metadata"""
     
+    # Define the base directory
+    base_directory = 'model/xgboost_train'
+    
+    # Ensure the base directory exists
+    if not os.path.exists(base_directory):
+        os.makedirs(base_directory)
+    
+    # Ensure the trained_model subdirectory exists
+    trained_model_dir = os.path.join(base_directory, 'trained_model')
+    if not os.path.exists(trained_model_dir):
+        os.makedirs(trained_model_dir)
+    
     # Save models
     for target_name, model in models.items():
-        joblib.dump(model, f'xgb_model_{target_name}.pkl')
-    
-    # Ensure the directory exists
-    directory = 'model/xgboost_train/trained_model'
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+        joblib.dump(model, os.path.join(trained_model_dir, f'xgb_model_{target_name}.pkl'))
     
     # Save label encoders
-    joblib.dump(label_encoders, os.path.join(directory, 'label_encoders.pkl'))
+    joblib.dump(label_encoders, os.path.join(trained_model_dir, 'label_encoders.pkl'))
     
     # Save feature columns
-    with open('feature_columns.json', 'w') as f:
+    with open(os.path.join(base_directory, 'feature_columns.json'), 'w') as f:
         json.dump(feature_cols, f)
     
     # Save model metadata
@@ -254,13 +261,21 @@ def save_models_and_metadata(models, label_encoders, feature_cols):
         }
     }
     
-    with open('model_metadata.json', 'w') as f:
+    with open(os.path.join(base_directory, 'model_metadata.json'), 'w') as f:
         json.dump(metadata, f, indent=2)
     
     print("\n=== Models and metadata saved successfully ===")
 
 def create_visualizations(results):
     """Create visualizations for model performance"""
+    
+    # Define the base directory
+    base_directory = 'model/xgboost_train'
+    
+    # Ensure the img subdirectory exists
+    img_dir = os.path.join(base_directory, 'img')
+    if not os.path.exists(img_dir):
+        os.makedirs(img_dir)
     
     fig, axes = plt.subplots(2, 3, figsize=(18, 12))
     axes = axes.ravel()
@@ -291,7 +306,7 @@ def create_visualizations(results):
         fig.delaxes(axes[idx])
     
     plt.tight_layout()
-    plt.savefig('model/xgboost_train/img/model_performance.png', dpi=300, bbox_inches='tight')
+    plt.savefig(os.path.join(img_dir, 'model_performance.png'), dpi=300, bbox_inches='tight')
     plt.show()
 
 def main():

@@ -160,8 +160,8 @@ def train_models(X, y_dict):
                 continue
             
             model = xgb.XGBClassifier(
-                n_estimators=100,
-                max_depth=6,
+                n_estimators=1000,
+                max_depth=15,
                 learning_rate=0.1,
                 random_state=42,
                 eval_metric='logloss'
@@ -184,8 +184,8 @@ def train_models(X, y_dict):
         else:
             # Regression
             model = xgb.XGBRegressor(
-                n_estimators=100,
-                max_depth=6,
+                n_estimators=1000,
+                max_depth=15,
                 learning_rate=0.1,
                 random_state=42
             )

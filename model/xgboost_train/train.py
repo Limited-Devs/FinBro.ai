@@ -8,6 +8,7 @@ from sklearn.metrics import mean_squared_error, r2_score, classification_report
 import matplotlib.pyplot as plt
 import seaborn as sns
 import joblib
+import os
 
 def load_and_preprocess_data():
     """Load and preprocess the financial data"""
@@ -227,8 +228,13 @@ def save_models_and_metadata(models, label_encoders, feature_cols):
     for target_name, model in models.items():
         joblib.dump(model, f'xgb_model_{target_name}.pkl')
     
+    # Ensure the directory exists
+    directory = 'model/xgboost_train/trained_model'
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    
     # Save label encoders
-    joblib.dump(label_encoders, 'label_encoders.pkl')
+    joblib.dump(label_encoders, os.path.join(directory, 'label_encoders.pkl'))
     
     # Save feature columns
     with open('feature_columns.json', 'w') as f:
@@ -285,7 +291,7 @@ def create_visualizations(results):
         fig.delaxes(axes[idx])
     
     plt.tight_layout()
-    plt.savefig('model_performance.png', dpi=300, bbox_inches='tight')
+    plt.savefig('model/xgboost_train/img/model_performance.png', dpi=300, bbox_inches='tight')
     plt.show()
 
 def main():

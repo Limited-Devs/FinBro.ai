@@ -172,3 +172,12 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+model/xgboost_train/trained_model/xgb_model_savings_confidence.pkl
+model/xgboost_train/trained_model/xgb_model_risk_score.pkl
+model/xgboost_train/trained_model/xgb_model_recommended_savings_amount.pkl
+model/xgboost_train/trained_model/xgb_model_financial_risk.pkl
+model/xgboost_train/trained_model/label_encoders.pkl
+model/xgboost_train/img/model_performance.png
+model/xgboost_train/model_metadata.json
+model/xgboost_train/feature_columns.json
+model/xgboost_train/train.py

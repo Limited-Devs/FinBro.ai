@@ -68,14 +68,16 @@ class MLModelService:
             )
             
             try:
-                self._models[name] = tf.keras.models.load_model(model_path, compile=False)
-                logger.info(f"Loaded model: {name}")
+                if os.path.exists(model_path):
+                    self._models[name] = tf.keras.models.load_model(model_path, compile=False)
+                    logger.info(f"Loaded model: {name}")
+                else:
+                    logger.warning(f"Model file not found: {model_path}")
             except Exception as e:
                 logger.error(f"Failed to load model {name}: {e}")
-                raise MLModelError(
-                    message=f"Failed to load ML model: {name}",
-                    model_name=name
-                )
+                # Don't raise exception here, just log error
+                # This allows the API to start even if models fail to load
+                pass
     
     def predict(self, features: np.ndarray) -> Dict[str, Any]:
         """

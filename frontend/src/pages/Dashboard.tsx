@@ -1,10 +1,11 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { TrendingUp, DollarSign, AlertTriangle, Zap, Sparkles, ArrowUpRight, ArrowDownRight, Brain } from "lucide-react"
+import { TrendingUp, DollarSign, AlertTriangle, Zap, Sparkles, ArrowUpRight, ArrowDownRight, Brain, BarChart3 } from "lucide-react"
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as RechartsTooltip } from 'recharts'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsBarTooltip, ResponsiveContainer as BarResponsiveContainer } from 'recharts'
 import { useUserData } from '@/hooks/useUserData'
+import { useTrendsData } from '@/hooks/useTrendsData'
 import { cn } from '@/services/utils'
 
 // Animated counter hook for financial figures
@@ -52,6 +53,7 @@ const CHART_COLORS = {
 
 const Dashboard = () => {
   const { data: userDataResponse, isLoading, error: queryError } = useUserData()
+  const { data: trendsData, isLoading: trendsLoading } = useTrendsData(6)
 
   const latestPrediction = useMemo(() =>
     userDataResponse?.predictions?.[userDataResponse.predictions.length - 1],
@@ -81,14 +83,15 @@ const Dashboard = () => {
     ].filter(expense => expense.value > 0)
   }, [displayUserData])
 
-  const savingsData = [
-    { month: 'Jan', actual: 2800, target: 3200 },
-    { month: 'Feb', actual: 3100, target: 3200 },
-    { month: 'Mar', actual: 2900, target: 3200 },
-    { month: 'Apr', actual: 3400, target: 3200 },
-    { month: 'May', actual: 3200, target: 3200 },
-    { month: 'Jun', actual: 3500, target: 3200 },
-  ]
+  // Real savings data from API trends endpoint
+  const savingsData = useMemo(() => {
+    if (!trendsData?.monthly_data || trendsData.monthly_data.length === 0) return []
+    return trendsData.monthly_data.map(m => ({
+      month: m.month,
+      actual: m.actual_savings,
+      target: m.target_savings
+    }))
+  }, [trendsData])
 
   const highestNonEssentialExpense = useMemo(() => {
     if (!displayUserData) return null
@@ -348,55 +351,65 @@ const Dashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="font-display text-lg">Savings Progress</CardTitle>
-                <p className="text-sm text-muted-foreground mt-0.5">Last 6 months performance</p>
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  {savingsData.length > 0 ? `Last ${savingsData.length} months performance` : 'Historical performance'}
+                </p>
               </div>
             </div>
           </CardHeader>
           <CardContent className="h-[350px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={savingsData} barCategoryGap="20%">
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  vertical={false}
-                  stroke="hsl(var(--border))"
-                />
-                <XAxis
-                  dataKey="month"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
-                  tickFormatter={(value) => `$${value / 1000}k`}
-                />
-                <RechartsBarTooltip
-                  formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
-                  cursor={{ fill: 'hsl(var(--muted))', opacity: 0.3 }}
-                />
-                <Legend
-                  verticalAlign="top"
-                  height={36}
-                  iconType="circle"
-                  iconSize={8}
-                />
-                <Bar
-                  dataKey="actual"
-                  fill={CHART_COLORS.gold}
-                  name="Actual Savings"
-                  radius={[4, 4, 0, 0]}
-                />
-                <Bar
-                  dataKey="target"
-                  fill={CHART_COLORS.cyan}
-                  name="Target Savings"
-                  radius={[4, 4, 0, 0]}
-                  opacity={0.6}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+            {savingsData.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <BarChart3 className="h-12 w-12 text-muted-foreground/50 mb-3" />
+                <p className="text-sm text-muted-foreground">Insufficient historical data</p>
+                <p className="text-xs text-muted-foreground/70 mt-1">Add more financial predictions to see trends</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={savingsData} barCategoryGap="20%">
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="hsl(var(--border))"
+                  />
+                  <XAxis
+                    dataKey="month"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                    tickFormatter={(value) => `$${value / 1000}k`}
+                  />
+                  <RechartsBarTooltip
+                    formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                    cursor={{ fill: 'hsl(var(--muted))', opacity: 0.3 }}
+                  />
+                  <Legend
+                    verticalAlign="top"
+                    height={36}
+                    iconType="circle"
+                    iconSize={8}
+                  />
+                  <Bar
+                    dataKey="actual"
+                    fill={CHART_COLORS.gold}
+                    name="Actual Savings"
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="target"
+                    fill={CHART_COLORS.cyan}
+                    name="Target Savings"
+                    radius={[4, 4, 0, 0]}
+                    opacity={0.6}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
       </div>

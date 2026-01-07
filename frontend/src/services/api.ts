@@ -1,7 +1,7 @@
 // src/services/api.js or api.ts
 import { PredictionInput, PredictionOutput, ChatMessage, ChatResponse } from '@/types/user-data';
 
-// Use relative URLs since we're serving from the same port
+// Use relative URLs - Vite proxy forwards /api to Flask backend on port 5000
 const API_BASE_URL = '';
 
 export const chatAPI = {
@@ -25,12 +25,12 @@ export const chatAPI = {
       return data;
     } catch (error) {
       console.error('Chat API Error:', error);
-      
+
       // Check if it's a network error
       if (error instanceof TypeError && error.message.includes('fetch')) {
         throw new Error('Unable to connect to server. Please check if the backend is running.');
       }
-      
+
       throw error;
     }
   },
@@ -57,11 +57,11 @@ export const predictionAPI = {
       return data;
     } catch (error) {
       console.error('Prediction API Error:', error);
-      
+
       if (error instanceof TypeError && error.message.includes('fetch')) {
         throw new Error('Unable to connect to server. Please check if the backend is running.');
       }
-      
+
       throw error;
     }
   },
@@ -86,6 +86,20 @@ export const predictionAPI = {
       return response.json();
     } catch (error) {
       console.error('Get User Data Error:', error);
+      throw error;
+    }
+  },
+
+  // Get monthly trends for charts
+  getTrends: async (months: number = 6) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/data/trends?months=${months}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch trends data');
+      }
+      return response.json();
+    } catch (error) {
+      console.error('Get Trends Error:', error);
       throw error;
     }
   }

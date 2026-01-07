@@ -40,6 +40,7 @@ class FeatureProcessor:
         "Potential_Savings_Education", "Potential_Savings_Miscellaneous"
     ]
     
+    
     def __init__(self, feature_info_path: str):
         """
         Initialize the feature processor.
@@ -47,13 +48,20 @@ class FeatureProcessor:
         Args:
             feature_info_path: Path to the feature_info.json file
         """
-        with open(feature_info_path, 'r') as f:
-            self.feature_info = json.load(f)
-        
-        self.feature_order = (
-            self.feature_info['numerical_features'] + 
-            self.feature_info['categorical_features']
-        )
+        try:
+            with open(feature_info_path, 'r') as f:
+                self.feature_info = json.load(f)
+            
+            self.feature_order = (
+                self.feature_info.get('numerical_features', []) + 
+                self.feature_info.get('categorical_features', [])
+            )
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            # Fallback initialization to prevent crash
+            print(f"Warning: Failed to load feature info from {feature_info_path}: {e}")
+            self.feature_info = {}
+            self.feature_order = []
+            
         self.total_features = len(self.feature_order)
     
     def process(self, data: Dict[str, Any]) -> np.ndarray:

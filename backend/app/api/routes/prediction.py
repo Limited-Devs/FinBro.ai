@@ -105,3 +105,24 @@ def get_data():
     result = service.get_predictions(limit=limit, offset=offset)
     
     return jsonify(result)
+
+
+@prediction_bp.route('/data/trends', methods=['GET'])
+def get_trends():
+    """
+    Get monthly aggregated financial trends for charts.
+    
+    Query params:
+    - months: Number of months of history (default 6, max 12)
+    """
+    months = request.args.get('months', 6, type=int)
+    months = min(max(1, months), 12)  # 1-12
+    
+    service = get_prediction_service()
+    monthly_data = service.repository.get_monthly_trends(months=months)
+    
+    return jsonify({
+        "monthly_data": monthly_data,
+        "total_months": len(monthly_data)
+    })
+

@@ -123,58 +123,12 @@ class PredictionRepository:
         user_id: Optional[str]
     ) -> Dict[str, Any]:
         """Build Supabase record from input/output data."""
-        # Extract model outputs safely
-        savings_model = output_data.get("savings_model", {})
-        amount_model = output_data.get("amount_model", {})
-        multi_task = output_data.get("multi_task_model", {})
-        
+        # Database schema uses jsonb for input_data and output_data
         return {
             "timestamp": timestamp,
             "user_id": user_id,
-            
-            # Basic financial info
-            "income": float(input_data.get("Income", 0)),
-            "age": int(input_data.get("Age", 0)),
-            "dependents": int(input_data.get("Dependents", 0)),
-            "occupation": input_data.get("Occupation"),
-            "city_tier": input_data.get("City_Tier"),
-            
-            # Expenses
-            "rent": float(input_data.get("Rent", 0)),
-            "loan_repayment": float(input_data.get("Loan_Repayment", 0)),
-            "insurance": float(input_data.get("Insurance", 0)),
-            "groceries": float(input_data.get("Groceries", 0)),
-            "transport": float(input_data.get("Transport", 0)),
-            "eating_out": float(input_data.get("Eating_Out", 0)),
-            "entertainment": float(input_data.get("Entertainment", 0)),
-            "utilities": float(input_data.get("Utilities", 0)),
-            "healthcare": float(input_data.get("Healthcare", 0)),
-            "education": float(input_data.get("Education", 0)),
-            "miscellaneous": float(input_data.get("Miscellaneous", 0)),
-            
-            # Savings info
-            "desired_savings_percentage": float(input_data.get("Desired_Savings_Percentage", 0)),
-            "disposable_income": float(input_data.get("Disposable_Income", 0)),
-            
-            # Potential savings
-            "potential_savings_groceries": float(input_data.get("Potential_Savings_Groceries", 0)),
-            "potential_savings_transport": float(input_data.get("Potential_Savings_Transport", 0)),
-            "potential_savings_eating_out": float(input_data.get("Potential_Savings_Eating_Out", 0)),
-            "potential_savings_entertainment": float(input_data.get("Potential_Savings_Entertainment", 0)),
-            "potential_savings_utilities": float(input_data.get("Potential_Savings_Utilities", 0)),
-            "potential_savings_healthcare": float(input_data.get("Potential_Savings_Healthcare", 0)),
-            "potential_savings_education": float(input_data.get("Potential_Savings_Education", 0)),
-            "potential_savings_miscellaneous": float(input_data.get("Potential_Savings_Miscellaneous", 0)),
-            
-            # ML predictions
-            "savings_model_can_achieve": savings_model.get("can_achieve_savings"),
-            "savings_model_confidence": float(savings_model.get("confidence", 0)),
-            "amount_model_recommended_savings": float(amount_model.get("recommended_savings", 0)),
-            "multi_task_can_achieve": multi_task.get("can_achieve_savings"),
-            "multi_task_savings_confidence": float(multi_task.get("savings_confidence", 0)),
-            "multi_task_recommended_amount": float(multi_task.get("recommended_savings_amount", 0)),
-            "multi_task_financial_risk": multi_task.get("financial_risk"),
-            "multi_task_risk_score": float(multi_task.get("risk_score", 0))
+            "input_data": input_data,
+            "output_data": output_data
         }
     
     def _create_json_record(
@@ -256,52 +210,45 @@ class PredictionRepository:
     
     def _format_supabase_record(self, record: Dict[str, Any]) -> Dict[str, Any]:
         """Format Supabase record to standard structure."""
+        # Unpack JSONB fields
+        input_data = record.get("input_data", {})
+        output_data = record.get("output_data", {})
+        
         return {
             "id": record["id"],
             "timestamp": record["timestamp"],
             "input_data": {
-                "Income": record["income"],
-                "Age": record["age"],
-                "Dependents": record["dependents"],
-                "Occupation": record["occupation"],
-                "City_Tier": record["city_tier"],
-                "Rent": record["rent"],
-                "Loan_Repayment": record["loan_repayment"],
-                "Insurance": record["insurance"],
-                "Groceries": record["groceries"],
-                "Transport": record["transport"],
-                "Eating_Out": record["eating_out"],
-                "Entertainment": record["entertainment"],
-                "Utilities": record["utilities"],
-                "Healthcare": record["healthcare"],
-                "Education": record["education"],
-                "Miscellaneous": record["miscellaneous"],
-                "Desired_Savings_Percentage": record["desired_savings_percentage"],
-                "Disposable_Income": record["disposable_income"],
-                "Potential_Savings_Groceries": record["potential_savings_groceries"],
-                "Potential_Savings_Transport": record["potential_savings_transport"],
-                "Potential_Savings_Eating_Out": record["potential_savings_eating_out"],
-                "Potential_Savings_Entertainment": record["potential_savings_entertainment"],
-                "Potential_Savings_Utilities": record["potential_savings_utilities"],
-                "Potential_Savings_Healthcare": record["potential_savings_healthcare"],
-                "Potential_Savings_Education": record["potential_savings_education"],
-                "Potential_Savings_Miscellaneous": record["potential_savings_miscellaneous"],
+                "Income": input_data.get("Income"),
+                "Age": input_data.get("Age"),
+                "Dependents": input_data.get("Dependents"),
+                "Occupation": input_data.get("Occupation"),
+                "City_Tier": input_data.get("City_Tier"),
+                "Rent": input_data.get("Rent"),
+                "Loan_Repayment": input_data.get("Loan_Repayment"),
+                "Insurance": input_data.get("Insurance"),
+                "Groceries": input_data.get("Groceries"),
+                "Transport": input_data.get("Transport"),
+                "Eating_Out": input_data.get("Eating_Out"),
+                "Entertainment": input_data.get("Entertainment"),
+                "Utilities": input_data.get("Utilities"),
+                "Healthcare": input_data.get("Healthcare"),
+                "Education": input_data.get("Education"),
+                "Miscellaneous": input_data.get("Miscellaneous"),
+                "Desired_Savings_Percentage": input_data.get("Desired_Savings_Percentage"),
+                "Disposable_Income": input_data.get("Disposable_Income"),
+                "Potential_Savings_Groceries": input_data.get("Potential_Savings_Groceries"),
+                "Potential_Savings_Transport": input_data.get("Potential_Savings_Transport"),
+                "Potential_Savings_Eating_Out": input_data.get("Potential_Savings_Eating_Out"),
+                "Potential_Savings_Entertainment": input_data.get("Potential_Savings_Entertainment"),
+                "Potential_Savings_Utilities": input_data.get("Potential_Savings_Utilities"),
+                "Potential_Savings_Healthcare": input_data.get("Potential_Savings_Healthcare"),
+                "Potential_Savings_Education": input_data.get("Potential_Savings_Education"),
+                "Potential_Savings_Miscellaneous": input_data.get("Potential_Savings_Miscellaneous"),
             },
             "output_data": {
-                "savings_model": {
-                    "can_achieve_savings": record["savings_model_can_achieve"],
-                    "confidence": record["savings_model_confidence"]
-                },
-                "amount_model": {
-                    "recommended_savings": record["amount_model_recommended_savings"]
-                },
-                "multi_task_model": {
-                    "can_achieve_savings": record["multi_task_can_achieve"],
-                    "savings_confidence": record["multi_task_savings_confidence"],
-                    "recommended_savings_amount": record["multi_task_recommended_amount"],
-                    "financial_risk": record["multi_task_financial_risk"],
-                    "risk_score": record["multi_task_risk_score"]
-                }
+                "savings_model": output_data.get("savings_model", {}),
+                "amount_model": output_data.get("amount_model", {}),
+                "multi_task_model": output_data.get("multi_task_model", {})
             }
         }
     
@@ -356,6 +303,72 @@ class PredictionRepository:
             logger.error(f"Delete failed: {e}")
             return False
     
+    def get_monthly_trends(
+        self,
+        user_id: Optional[str] = None,
+        months: int = 6
+    ) -> List[Dict[str, Any]]:
+        """
+        Get aggregated monthly financial data for trend visualization.
+        
+        Args:
+            user_id: Filter by user ID (optional)
+            months: Number of months of history to return
+        
+        Returns:
+            List of monthly aggregated data sorted by date
+        """
+        # Get recent predictions
+        predictions = self.get_all(user_id=user_id, limit=months * 5)  # Extra buffer for multiple per month
+        
+        if not predictions:
+            return []
+        
+        # Group by month
+        monthly_data: Dict[str, Dict[str, Any]] = {}
+        
+        for pred in predictions:
+            try:
+                timestamp = pred.get("timestamp", "")
+                if not timestamp:
+                    continue
+                    
+                # Parse timestamp and get month key
+                dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+                month_key = dt.strftime("%Y-%m")
+                month_name = dt.strftime("%b")
+                
+                input_data = pred.get("input_data", {})
+                output_data = pred.get("output_data", {})
+                
+                # Use latest prediction for each month
+                if month_key not in monthly_data:
+                    monthly_data[month_key] = {
+                        "month": month_name,
+                        "month_key": month_key,
+                        "income": input_data.get("Income", 0) or 0,
+                        "expenses": sum([
+                            input_data.get("Rent", 0) or 0,
+                            input_data.get("Groceries", 0) or 0,
+                            input_data.get("Utilities", 0) or 0,
+                            input_data.get("Transport", 0) or 0,
+                            input_data.get("Insurance", 0) or 0,
+                            input_data.get("Eating_Out", 0) or 0,
+                            input_data.get("Healthcare", 0) or 0,
+                            input_data.get("Entertainment", 0) or 0,
+                            input_data.get("Miscellaneous", 0) or 0,
+                        ]),
+                        "actual_savings": input_data.get("Disposable_Income", 0) or 0,
+                        "target_savings": output_data.get("amount_model", {}).get("recommended_savings", 0) or 0
+                    }
+            except Exception as e:
+                logger.warning(f"Error processing prediction for trends: {e}")
+                continue
+        
+        # Sort by month_key and return last N months
+        sorted_months = sorted(monthly_data.values(), key=lambda x: x["month_key"])
+        return sorted_months[-months:]
+
     def check_health(self) -> Dict[str, Any]:
         """
         Check repository health.

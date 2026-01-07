@@ -255,65 +255,56 @@ const Expenses = () => {
             <CardDescription>AI-powered recommendations to reduce expenses</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="p-4 rounded-lg bg-success/10 border border-success/20">
-              <div className="flex items-start space-x-3">
-                <ShoppingCart className="h-5 w-5 text-success mt-1" />
-                <div>
-                  <h4 className="font-semibold text-success">Groceries Optimization</h4>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Potential savings: ₹1,686/month. Try meal planning, bulk buying, and using coupons.
-                  </p>
-                  <Button variant="outline" size="sm" className="mt-2 border-success text-success hover:bg-success hover:text-white">
-                    View Tips
-                  </Button>
-                </div>
-              </div>
-            </div>
+            {expenseCategories
+              .filter(cat => cat.potentialSavings > 0)
+              .sort((a, b) => b.potentialSavings - a.potentialSavings)
+              .slice(0, 4)
+              .map((category, index) => {
+                const IconComponent = category.icon
+                const colorClasses = [
+                  { bg: 'bg-success/10', border: 'border-success/20', text: 'text-success' },
+                  { bg: 'bg-warning/10', border: 'border-warning/20', text: 'text-warning' },
+                  { bg: 'bg-info/10', border: 'border-info/20', text: 'text-info' },
+                  { bg: 'bg-purple-100 dark:bg-purple-900/20', border: 'border-purple-200 dark:border-purple-800', text: 'text-purple-600' }
+                ][index] || { bg: 'bg-muted/10', border: 'border-muted/20', text: 'text-muted-foreground' }
 
-            <div className="p-4 rounded-lg bg-warning/10 border border-warning/20">
-              <div className="flex items-start space-x-3">
-                <DollarSign className="h-5 w-5 text-warning mt-1" />
-                <div>
-                  <h4 className="font-semibold text-warning">Utilities Reduction</h4>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Potential savings: ₹678/month. Consider energy-efficient appliances and smart usage.
-                  </p>
-                  <Button variant="outline" size="sm" className="mt-2 border-warning text-warning hover:bg-warning hover:text-white">
-                    Learn More
-                  </Button>
-                </div>
-              </div>
-            </div>
+                const tips: Record<string, string> = {
+                  'Groceries': 'Try meal planning, bulk buying, and using coupons.',
+                  'Utilities': 'Consider energy-efficient appliances and smart usage.',
+                  'Eating Out': 'Try cooking at home more often and limit restaurant visits.',
+                  'Transport': 'Consider carpooling, public transport, or remote work options.',
+                  'Entertainment': 'Look for free alternatives and subscription sharing.',
+                  'Healthcare': 'Compare pharmacy prices and use generic medications.',
+                  'Miscellaneous': 'Track and categorize these expenses for better control.'
+                }
 
-            <div className="p-4 rounded-lg bg-info/10 border border-info/20">
-              <div className="flex items-start space-x-3">
-                <Utensils className="h-5 w-5 text-info mt-1" />
-                <div>
-                  <h4 className="font-semibold text-info">Dining Out Alternative</h4>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Potential savings: ₹466/month. Try cooking at home more often and limit restaurant visits.
-                  </p>
-                  <Button variant="outline" size="sm" className="mt-2 border-info text-info hover:bg-info hover:text-white">
-                    Get Recipes
-                  </Button>
-                </div>
+                return (
+                  <div key={category.name} className={`p-4 rounded-lg ${colorClasses.bg} border ${colorClasses.border}`}>
+                    <div className="flex items-start space-x-3">
+                      <IconComponent className={`h-5 w-5 ${colorClasses.text} mt-1`} />
+                      <div>
+                        <h4 className={`font-semibold ${colorClasses.text}`}>{category.name} Optimization</h4>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Potential savings: ₹{category.potentialSavings.toFixed(0)}/month. {tips[category.name] || 'Review spending patterns for optimization opportunities.'}
+                        </p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className={`mt-2 border-current ${colorClasses.text} hover:opacity-80`}
+                        >
+                          View Tips
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            {expenseCategories.filter(cat => cat.potentialSavings > 0).length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                <p className="text-sm">No optimization suggestions available</p>
+                <p className="text-xs mt-1">Your expenses are already optimized!</p>
               </div>
-            </div>
-
-            <div className="p-4 rounded-lg bg-purple-100 border border-purple-200 dark:bg-purple-900/20 dark:border-purple-800">
-              <div className="flex items-start space-x-3">
-                <Car className="h-5 w-5 text-purple-600 mt-1" />
-                <div>
-                  <h4 className="font-semibold text-purple-600">Transportation Savings</h4>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Potential savings: ₹329/month. Consider carpooling, public transport, or remote work options.
-                  </p>
-                  <Button variant="outline" size="sm" className="mt-2 border-purple-600 text-purple-600 hover:bg-purple-600 hover:text-white">
-                    Explore Options
-                  </Button>
-                </div>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -337,13 +328,13 @@ const Expenses = () => {
                       {category.amount.toLocaleString()} / {budgetLimit.toLocaleString()}
                     </span>
                   </div>
-                  <Progress 
-                    value={spentPercentage} 
+                  <Progress
+                    value={spentPercentage}
                     className={`h-2 ${spentPercentage > 90 ? 'bg-destructive/20' : spentPercentage > 75 ? 'bg-warning/20' : 'bg-success/20'}`}
                   />
                   <div className="flex justify-between text-xs text-muted-foreground">
                     <span>{spentPercentage.toFixed(0)}% used</span>
-                    <Badge 
+                    <Badge
                       variant={spentPercentage > 90 ? 'destructive' : spentPercentage > 75 ? 'secondary' : 'outline'}
                       className="text-xs"
                     >

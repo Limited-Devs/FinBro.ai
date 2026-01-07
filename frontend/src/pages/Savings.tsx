@@ -3,12 +3,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Target, TrendingUp, DollarSign, Calendar, AlertCircle, CheckCircle2, Clock, Loader2 } from "lucide-react"
+import { Target, TrendingUp, DollarSign, Calendar, AlertCircle, CheckCircle2, Clock, Loader2, Info } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import { useUserData } from "@/hooks/useUserData"
+import { useTrendsData } from "@/hooks/useTrendsData"
 
 const Savings = () => {
   const { data: userData, isLoading: loading, error } = useUserData()
+  const { data: trendsData } = useTrendsData(6)
 
   if (loading) {
     return (
@@ -36,67 +38,84 @@ const Savings = () => {
   const userOutput = latestPrediction.output
 
   // Calculate dynamic savings goals based on user data
+  // NOTE: These are projections based on current financial data.
+  // A proper savings_goals table would store user-defined goals.
   const monthlySavingsAmount = (userInput.Income || 0) * (userInput.Savings_Rate || 0.10)
   const emergencyFundTarget = (userInput.Income || 0) * 6 // 6 months of income
   const currentSavings = userInput.Disposable_Income || 0
 
+  // Savings goals derived from ML recommendations and user data
+  // These are calculated suggestions, not user-defined goals
   const savingsGoals = [
     {
       id: 1,
       name: 'Emergency Fund',
       target: emergencyFundTarget,
-      current: currentSavings * 0.5, // Assume 50% is in emergency fund
+      current: currentSavings * 0.5, // Estimated allocation
       deadline: '2025-12-31',
-      priority: 'high',
-      status: 'in_progress',
-      monthlyContribution: monthlySavingsAmount * 0.4, // 40% of savings to emergency
-      category: 'safety'
-    },    {
+      priority: 'high' as const,
+      status: 'in_progress' as const,
+      monthlyContribution: monthlySavingsAmount * 0.4,
+      category: 'safety',
+      isProjected: true // Flag indicating this is AI-projected, not user-defined
+    },
+    {
       id: 2,
       name: 'Investment Portfolio',
-      target: (userInput.Income || 0) * 24, // 2 years of income as investment target
-      current: currentSavings * 0.3, // Assume 30% is in investments
+      target: (userInput.Income || 0) * 24,
+      current: currentSavings * 0.3,
       deadline: '2026-06-30',
-      priority: 'medium',
-      status: 'in_progress',
-      monthlyContribution: monthlySavingsAmount * 0.35, // 35% to investments
-      category: 'growth'
+      priority: 'medium' as const,
+      status: 'in_progress' as const,
+      monthlyContribution: monthlySavingsAmount * 0.35,
+      category: 'growth',
+      isProjected: true
     },
     {
       id: 3,
       name: 'Vacation Fund',
-      target: (userInput.Income || 0) * 0.5, // Half month income for vacation
-      current: currentSavings * 0.1, // Assume 10% for vacation
+      target: (userInput.Income || 0) * 0.5,
+      current: currentSavings * 0.1,
       deadline: '2025-07-01',
-      priority: 'low',
-      status: 'in_progress',
-      monthlyContribution: monthlySavingsAmount * 0.15, // 15% to vacation
-      category: 'lifestyle'
+      priority: 'low' as const,
+      status: 'in_progress' as const,
+      monthlyContribution: monthlySavingsAmount * 0.15,
+      category: 'lifestyle',
+      isProjected: true
     },
     {
       id: 4,
       name: 'Home Improvement',
-      target: (userInput.Income || 0) * 1.5, // 1.5 months income for home improvement
-      current: currentSavings * 0.1, // Assume 10% for home improvement
+      target: (userInput.Income || 0) * 1.5,
+      current: currentSavings * 0.1,
       deadline: '2026-12-31',
-      priority: 'medium',
-      status: 'planning',
-      monthlyContribution: monthlySavingsAmount * 0.1, // 10% to home improvement
-      category: 'home'
+      priority: 'medium' as const,
+      status: 'planning' as const,
+      monthlyContribution: monthlySavingsAmount * 0.1,
+      category: 'home',
+      isProjected: true
     }
   ]
 
-  // Generate projection data based on current savings and monthly contributions
-  const savingsProjection = Array.from({ length: 6 }, (_, i) => {
-    const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'][i]
-    return {
-      month,
-      emergency: Math.max(0, savingsGoals[0].current + (savingsGoals[0].monthlyContribution * (i + 1))),
-      investment: Math.max(0, savingsGoals[1].current + (savingsGoals[1].monthlyContribution * (i + 1))),
-      vacation: Math.max(0, savingsGoals[2].current + (savingsGoals[2].monthlyContribution * (i + 1))),
-      home: Math.max(0, savingsGoals[3].current + (savingsGoals[3].monthlyContribution * (i + 1))),
-    }
-  })
+  // Use real historical trends if available, otherwise show projections
+  const savingsProjection = trendsData?.monthly_data && trendsData.monthly_data.length > 1
+    ? trendsData.monthly_data.map(m => ({
+      month: m.month,
+      emergency: m.actual_savings * 0.5,
+      investment: m.actual_savings * 0.3,
+      vacation: m.actual_savings * 0.1,
+      home: m.actual_savings * 0.1,
+    }))
+    : Array.from({ length: 6 }, (_, i) => {
+      const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'][i]
+      return {
+        month,
+        emergency: Math.max(0, savingsGoals[0].current + (savingsGoals[0].monthlyContribution * (i + 1))),
+        investment: Math.max(0, savingsGoals[1].current + (savingsGoals[1].monthlyContribution * (i + 1))),
+        vacation: Math.max(0, savingsGoals[2].current + (savingsGoals[2].monthlyContribution * (i + 1))),
+        home: Math.max(0, savingsGoals[3].current + (savingsGoals[3].monthlyContribution * (i + 1))),
+      }
+    })
   // AI recommendations based on user data
   const aiRecommendations = [
     {
@@ -229,7 +248,7 @@ const Savings = () => {
               const progressPercentage = (goal.current / goal.target) * 100
               const StatusIcon = getStatusIcon(goal.status)
               const monthsToGoal = goal.target > goal.current ? Math.ceil((goal.target - goal.current) / goal.monthlyContribution) : 0
-              
+
               return (
                 <div key={goal.id} className="p-4 rounded-lg border hover:bg-muted/50 transition-colors">
                   <div className="flex items-start justify-between mb-3">
@@ -257,9 +276,9 @@ const Savings = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <Progress value={progressPercentage} className="h-2 mb-2" />
-                  
+
                   <div className="flex justify-between text-xs text-muted-foreground">
                     <span>{progressPercentage.toFixed(1)}% complete</span>
                     <span>₹{goal.monthlyContribution.toLocaleString()}/month</span>
@@ -267,7 +286,7 @@ const Savings = () => {
                 </div>
               )
             })}
-            
+
             <Button className="w-full" variant="outline">
               <Target className="h-4 w-4 mr-2" />
               Add New Goal
@@ -287,9 +306,9 @@ const Savings = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis dataKey="month" stroke="#9CA3AF" />
                 <YAxis stroke="#9CA3AF" />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#1F2937', 
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1F2937',
                     border: '1px solid #374151',
                     borderRadius: '8px'
                   }}

@@ -1,0 +1,43 @@
+{
+  "model_type": "xgboost",
+  "training_history": {
+    "trained_at": "2026-01-09T00:04:58.313402",
+    "n_train_samples": 14000,
+    "n_val_samples": 3000,
+    "n_features": 31,
+    "classifier_params": {
+      "max_depth": 15,
+      "learning_rate": 0.1,
+      "n_estimators": 10000,
+      "objective": "binary:logistic",
+      "eval_metric": "logloss",
+      "random_state": 42,
+      "n_jobs": -1
+    },
+    "regressor_params": {
+      "max_depth": 15,
+      "learning_rate": 0.1,
+      "n_estimators": 10000,
+      "objective": "reg:squarederror",
+      "random_state": 42,
+      "n_jobs": -1
+    }
+  },
+  "classifier_params": {
+    "max_depth": 15,
+    "learning_rate": 0.1,
+    "n_estimators": 10000,
+    "objective": "binary:logistic",
+    "eval_metric": "logloss",
+    "random_state": 42,
+    "n_jobs": -1
+  },
+  "regressor_params": {
+    "max_depth": 15,
+    "learning_rate": 0.1,
+    "n_estimators": 10000,
+    "objective": "reg:squarederror",
+    "random_state": 42,
+    "n_jobs": -1
+  }
+}

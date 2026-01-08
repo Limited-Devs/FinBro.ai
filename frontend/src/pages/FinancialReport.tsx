@@ -16,6 +16,7 @@ import { useUserData } from '@/hooks/useUserData'
 import { predictionAPI } from '@/services/api'
 import { PredictionInput, PredictionOutput } from '@/types/user-data'
 import { useToast } from '@/hooks/use-toast'
+import { formatNumber, formatPercent, safeNumber } from '@/services/utils'
 
 const formSchema = z.object({
   income: z.number().min(0, "Income must be positive"),
@@ -104,7 +105,7 @@ const FinancialReport = () => {
     const savingsRate = data.desiredSavingsPercentage / 100
     const desiredSavingsAmount = data.income * savingsRate  // Based on income, not disposable income
     const actualSavingsPotential = Math.min(desiredSavingsAmount, disposableIncome)  // Can't save more than disposable income
-        
+
     // Calculate potential savings (simplified calculation)
     const potentialSavings = {
       groceries: data.groceries * 0.25,
@@ -283,9 +284,9 @@ const FinancialReport = () => {
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Confidence Level</span>
-                  <span className="text-sm font-bold">{(mlResponse.savings_model.confidence * 100).toFixed(1)}%</span>
+                  <span className="text-sm font-bold">{formatPercent(mlResponse.savings_model.confidence, 1)}</span>
                 </div>
-                <Progress value={mlResponse.savings_model.confidence * 100} className="h-3" />
+                <Progress value={safeNumber(mlResponse.savings_model.confidence) * 100} className="h-3" />
               </div>
 
               <div className="flex items-center space-x-3 p-4 bg-white/50 dark:bg-black/20 rounded-xl">
@@ -321,7 +322,7 @@ const FinancialReport = () => {
                   </Badge>
                 </div>
                 <Progress
-                  value={mlResponse.multi_task_model.risk_score * 100}
+                  value={safeNumber(mlResponse.multi_task_model.risk_score) * 100}
                   className="h-3"
                 />
               </div>
@@ -331,7 +332,7 @@ const FinancialReport = () => {
                 <div>
                   <p className="font-semibold text-lg">{riskInfo.level} Risk Level</p>
                   <p className="text-sm text-muted-foreground">
-                    Score: {(mlResponse.multi_task_model.risk_score * 100).toFixed(1)}%
+                    Score: {formatPercent(mlResponse.multi_task_model.risk_score, 1)}
                   </p>
                 </div>
               </div>
@@ -354,7 +355,7 @@ const FinancialReport = () => {
                   <div className="p-6 bg-white/50 dark:bg-black/20 rounded-xl">
                     <h3 className="text-lg font-semibold mb-2">Standard Model</h3>
                     <p className="text-3xl font-bold text-blue-600">
-                      ₹{mlResponse.amount_model.recommended_savings.toLocaleString()}
+                      ₹{formatNumber(mlResponse.amount_model.recommended_savings)}
                     </p>
                     <p className="text-sm text-muted-foreground mt-1">Recommended annual savings</p>
                   </div>
@@ -364,13 +365,13 @@ const FinancialReport = () => {
                   <div className="p-6 bg-white/50 dark:bg-black/20 rounded-xl">
                     <h3 className="text-lg font-semibold mb-2">Multi-Task AI Model</h3>
                     <p className="text-3xl font-bold text-indigo-600">
-                      ₹{mlResponse.multi_task_model.recommended_savings_amount.toLocaleString()}
+                      ₹{formatNumber(mlResponse.multi_task_model.recommended_savings_amount)}
                     </p>
                     <p className="text-sm text-muted-foreground mt-1">Advanced AI recommendation</p>
                     <div className="mt-3 flex items-center space-x-2">
                       <span className="text-xs">Confidence:</span>
                       <Badge variant="secondary">
-                        {(mlResponse.multi_task_model.savings_confidence * 100).toFixed(1)}%
+                        {formatPercent(mlResponse.multi_task_model.savings_confidence, 1)}
                       </Badge>
                     </div>
                   </div>

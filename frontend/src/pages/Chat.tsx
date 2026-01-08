@@ -9,6 +9,7 @@ import { Send, Bot, User, Lightbulb, TrendingUp, PiggyBank, Shield, Loader2 } fr
 import { chatAPI } from '@/services/api'
 import { useToast } from '@/hooks/use-toast'
 import { useUserData } from '@/hooks/useUserData'
+import { formatNumber, formatPercent } from '@/services/utils'
 
 
 interface Message {
@@ -24,7 +25,7 @@ const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      content: `Hello! I'm your personal finance AI assistant. I can help you analyze your spending, optimize savings, assess financial risks, and provide personalized recommendations.${userData ? ` I can see you have an income of ₹${userData.Income?.toLocaleString()} and a savings rate of ${((userData.Savings_Rate || 0) * 100).toFixed(1)}%. ` : ' '}What would you like to know about your finances?`,
+      content: `Hello! I'm your personal finance AI assistant. I can help you analyze your spending, optimize savings, assess financial risks, and provide personalized recommendations.${userData ? ` I can see you have an income of ₹${formatNumber(userData.Income)} and a savings rate of ${formatPercent(userData.Savings_Rate || 0)}. ` : ' '}What would you like to know about your finances?`,
       isBot: true,
       timestamp: new Date().toLocaleTimeString()
     }
@@ -56,30 +57,29 @@ const Chat = () => {
     setIsLoading(true)
 
     try {
-      // Include user context in the chat message
-      const messageWithContext = userData 
-        ? `User Context: Income: ₹${userData.Income}, Age: ${userData.Age}, Savings Rate: ${((userData.Savings_Rate || 0) * 100).toFixed(1)}%, Financial Stress: ${((userData.Financial_Stress_Score || 0) * 100).toFixed(1)}%, Occupation: ${userData.Occupation}. User Question: ${inputValue}`
+      const messageWithContext = userData
+        ? `User Context: Income: ₹${userData.Income}, Age: ${userData.Age}, Savings Rate: ${formatPercent(userData.Savings_Rate)}, Financial Stress: ${formatPercent(userData.Financial_Stress_Score)}, Occupation: ${userData.Occupation}. User Question: ${inputValue}`
         : inputValue
 
       const response = await chatAPI.sendMessage(messageWithContext)
-      
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === loadingMessage.id 
+
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === loadingMessage.id
             ? { ...msg, content: response.response, isLoading: false }
             : msg
         )
       )
     } catch (error) {
       console.error('Chat error:', error)
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === loadingMessage.id 
-            ? { 
-                ...msg, 
-                content: "I'm sorry, I'm having trouble connecting to the server right now. Please try again later.", 
-                isLoading: false 
-              }
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === loadingMessage.id
+            ? {
+              ...msg,
+              content: "I'm sorry, I'm having trouble connecting to the server right now. Please try again later.",
+              isLoading: false
+            }
             : msg
         )
       )
@@ -99,8 +99,8 @@ const Chat = () => {
   // Suggested questions based on user data
   const userInput = userData?.predictions?.[0]?.input
   const suggestedQuestions = userInput ? [
-    `How can I reduce my financial stress score of ${((userInput.Financial_Stress_Score || 0) * 100).toFixed(1)}%?`,
-    `Is my savings rate of ${((userInput.Savings_Rate || 0) * 100).toFixed(1)}% good for someone my age?`,
+    `How can I reduce my financial stress score of ${formatPercent(userInput.Financial_Stress_Score)}?`,
+    `Is my savings rate of ${formatPercent(userInput.Savings_Rate)} good for someone my age?`,
     `What investment strategy would you recommend for my income level?`,
     `How can I optimize my expense categories?`
   ] : [
@@ -124,7 +124,7 @@ const Chat = () => {
         <CardHeader>
           <CardTitle>Chat with AI Assistant</CardTitle>
         </CardHeader>
-        
+
         {/* Messages */}
         <CardContent className="flex-1 overflow-auto space-y-4">
           {messages.map((message) => (
@@ -139,13 +139,12 @@ const Chat = () => {
                   </AvatarFallback>
                 </Avatar>
               )}
-              
+
               <div
-                className={`max-w-[70%] rounded-lg p-3 ${
-                  message.isBot
+                className={`max-w-[70%] rounded-lg p-3 ${message.isBot
                     ? 'bg-muted text-foreground'
                     : 'bg-primary text-primary-foreground ml-auto'
-                }`}
+                  }`}
               >
                 <div className="flex items-center space-x-2">
                   {message.isLoading && <Loader2 className="h-4 w-4 animate-spin" />}

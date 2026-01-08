@@ -7,6 +7,7 @@ import { Target, TrendingUp, DollarSign, Calendar, AlertCircle, CheckCircle2, Cl
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import { useUserData } from "@/hooks/useUserData"
 import { useTrendsData } from "@/hooks/useTrendsData"
+import { formatNumber, safeNumber } from "@/services/utils"
 
 const Savings = () => {
   const { data: userData, isLoading: loading, error } = useUserData()
@@ -120,10 +121,10 @@ const Savings = () => {
   const aiRecommendations = [
     {
       title: 'Optimize Emergency Fund',
-      description: `Based on your income of ₹${userInput.Income?.toLocaleString()}, build an emergency fund of ₹${emergencyFundTarget.toLocaleString()}.`,
+      description: `Based on your income of ₹${formatNumber(userInput.Income)}, build an emergency fund of ₹${formatNumber(emergencyFundTarget)}.`,
       impact: 'High',
       timeframe: '12 months',
-      action: `Increase monthly contribution by ₹${Math.max(0, (emergencyFundTarget - savingsGoals[0].current) / 12 - savingsGoals[0].monthlyContribution).toFixed(0)}`
+      action: `Increase monthly contribution by ₹${formatNumber(Math.max(0, (emergencyFundTarget - savingsGoals[0].current) / 12 - savingsGoals[0].monthlyContribution))}`
     },
     {
       title: 'Diversify Investment Strategy',
@@ -134,7 +135,7 @@ const Savings = () => {
     },
     {
       title: 'Automate Savings',
-      description: `Set up automatic transfers for ₹${monthlySavingsAmount.toFixed(0)} monthly to improve consistency.`,
+      description: `Set up automatic transfers for ₹${formatNumber(monthlySavingsAmount)} monthly to improve consistency.`,
       impact: 'Medium',
       timeframe: '1 month',
       action: 'Setup automatic transfers for different goals'
@@ -191,9 +192,9 @@ const Savings = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{totalCurrentSavings.toLocaleString()}</div>
+            <div className="text-2xl font-bold">₹{formatNumber(totalCurrentSavings)}</div>
             <p className="text-xs text-muted-foreground">
-              {overallProgress.toFixed(1)}% of total goals
+              {formatNumber(overallProgress, 1)}% of total goals
             </p>
           </CardContent>
         </Card>
@@ -203,9 +204,9 @@ const Savings = () => {
             <CardTitle className="text-sm font-medium">Monthly Savings</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>            <div className="text-2xl font-bold">₹{monthlySavingsAmount.toLocaleString()}</div>
+          <CardContent>            <div className="text-2xl font-bold">₹{formatNumber(monthlySavingsAmount)}</div>
             <p className="text-xs text-success">
-              {userInput.Income > 0 ? ((monthlySavingsAmount / userInput.Income) * 100).toFixed(1) : 0}% of income saved
+              {userInput.Income > 0 ? formatNumber((monthlySavingsAmount / safeNumber(userInput.Income)) * 100, 1) : 0}% of income saved
             </p>
           </CardContent>
         </Card>
@@ -228,7 +229,7 @@ const Savings = () => {
             <CardTitle className="text-sm font-medium">AI Confidence</CardTitle>
             <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>            <div className="text-2xl font-bold text-success">{userOutput.savings_model.confidence ? (userOutput.savings_model.confidence * 100).toFixed(1) : '99.9'}%</div>
+          <CardContent>            <div className="text-2xl font-bold text-success">{formatNumber(safeNumber(userOutput.savings_model.confidence) * 100, 1)}%</div>
             <p className="text-xs text-success">
               Goals achievable
             </p>
@@ -269,7 +270,7 @@ const Savings = () => {
                     </div>
                     <div className="text-right">
                       <div className="font-semibold">
-                        ₹{goal.current.toLocaleString()} / ₹{goal.target.toLocaleString()}
+                        ₹{formatNumber(goal.current)} / ₹{formatNumber(goal.target)}
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {monthsToGoal > 0 ? `₹${monthsToGoal} months left` : 'Goal achieved!'}
@@ -280,8 +281,8 @@ const Savings = () => {
                   <Progress value={progressPercentage} className="h-2 mb-2" />
 
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>{progressPercentage.toFixed(1)}% complete</span>
-                    <span>₹{goal.monthlyContribution.toLocaleString()}/month</span>
+                    <span>{formatNumber(progressPercentage, 1)}% complete</span>
+                    <span>₹{formatNumber(goal.monthlyContribution)}/month</span>
                   </div>
                 </div>
               )
@@ -312,7 +313,7 @@ const Savings = () => {
                     border: '1px solid #374151',
                     borderRadius: '8px'
                   }}
-                  formatter={(value) => [`₹${Number(value).toLocaleString()}`, '']}
+                  formatter={(value) => [`₹${formatNumber(value)}`, '']}
                 />
                 <Line type="monotone" dataKey="emergency" stroke="#EF4444" strokeWidth={2} />
                 <Line type="monotone" dataKey="investment" stroke="#10B981" strokeWidth={2} />

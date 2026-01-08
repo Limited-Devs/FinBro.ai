@@ -14,6 +14,7 @@ import { User, DollarSign, Home, Utensils, ArrowRight, ArrowLeft, Loader2, Check
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { onboardingAPI } from '@/services/api';
+import { formatNumber } from '@/services/utils';
 
 const formSchema = z.object({
     // Personal Info
@@ -265,7 +266,7 @@ const Onboarding = () => {
                                         />
                                     </FormControl>
                                     <p className="text-sm text-muted-foreground mt-2">
-                                        Based on your income, that's ${((form.watch('Income') || 0) * field.value / 100).toFixed(0)}/month
+                                        Based on your income, that's ${formatNumber((form.watch('Income') || 0) * field.value / 100)}/month
                                     </p>
                                     <FormMessage />
                                 </FormItem>

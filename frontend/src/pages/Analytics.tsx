@@ -5,6 +5,7 @@ import { TrendingUp, TrendingDown, DollarSign, Target, Loader2, BarChart3 } from
 import { Badge } from "@/components/ui/badge"
 import { useUserData } from '@/hooks/useUserData'
 import { useTrendsData } from '@/hooks/useTrendsData'
+import { formatNumber, formatPercent, safeNumber } from '@/services/utils'
 
 const Analytics = () => {
   const { data: userData, isLoading, error } = useUserData()
@@ -42,43 +43,43 @@ const Analytics = () => {
       category: 'Groceries',
       current: input.Groceries,
       potential: input.Potential_Savings_Groceries,
-      savings: ((input.Potential_Savings_Groceries / input.Groceries) * 100).toFixed(1)
+      savings: formatPercent(input.Potential_Savings_Groceries / safeNumber(input.Groceries), 1)
     },
     {
       category: 'Utilities',
       current: input.Utilities,
       potential: input.Potential_Savings_Utilities,
-      savings: ((input.Potential_Savings_Utilities / input.Utilities) * 100).toFixed(1)
+      savings: formatPercent(input.Potential_Savings_Utilities / safeNumber(input.Utilities), 1)
     },
     {
       category: 'Eating Out',
       current: input.Eating_Out,
       potential: input.Potential_Savings_Eating_Out,
-      savings: ((input.Potential_Savings_Eating_Out / input.Eating_Out) * 100).toFixed(1)
+      savings: formatPercent(input.Potential_Savings_Eating_Out / safeNumber(input.Eating_Out), 1)
     },
     {
       category: 'Transport',
       current: input.Transport,
       potential: input.Potential_Savings_Transport,
-      savings: ((input.Potential_Savings_Transport / input.Transport) * 100).toFixed(1)
+      savings: formatPercent(input.Potential_Savings_Transport / safeNumber(input.Transport), 1)
     },
     {
       category: 'Entertainment',
       current: input.Entertainment,
       potential: input.Potential_Savings_Entertainment,
-      savings: ((input.Potential_Savings_Entertainment / input.Entertainment) * 100).toFixed(1)
+      savings: formatPercent(input.Potential_Savings_Entertainment / safeNumber(input.Entertainment), 1)
     },
     {
       category: 'Healthcare',
       current: input.Healthcare,
       potential: input.Potential_Savings_Healthcare,
-      savings: ((input.Potential_Savings_Healthcare / input.Healthcare) * 100).toFixed(1)
+      savings: formatPercent(input.Potential_Savings_Healthcare / safeNumber(input.Healthcare), 1)
     },
     {
       category: 'Miscellaneous',
       current: input.Miscellaneous,
       potential: input.Potential_Savings_Miscellaneous,
-      savings: ((input.Potential_Savings_Miscellaneous / input.Miscellaneous) * 100).toFixed(1)
+      savings: formatPercent(input.Potential_Savings_Miscellaneous / safeNumber(input.Miscellaneous), 1)
     },
   ]
 
@@ -90,19 +91,19 @@ const Analytics = () => {
   const financialHealthData = [
     {
       metric: 'Savings Rate',
-      current: (input.Savings_Rate * 100).toFixed(1),
+      current: formatPercent(input.Savings_Rate, 1),
       target: 20,
       status: input.Savings_Rate >= 0.2 ? 'good' : 'below'
     },
     {
       metric: 'Emergency Fund',
-      current: ((input.Actual_Savings_Potential / input.Essential_Expenses) * 100).toFixed(1),
+      current: formatPercent(input.Actual_Savings_Potential / safeNumber(input.Essential_Expenses), 1),
       target: 100,
       status: (input.Actual_Savings_Potential / input.Essential_Expenses) >= 1 ? 'good' : 'critical'
     },
     {
       metric: 'Debt Ratio',
-      current: (input.Debt_to_Income_Ratio * 100).toFixed(1),
+      current: formatPercent(input.Debt_to_Income_Ratio, 1),
       target: 0,
       status: input.Debt_to_Income_Ratio === 0 ? 'good' : 'below'
     },
@@ -123,7 +124,7 @@ const Analytics = () => {
   })) || []
 
   const totalPotentialSavings = potentialSavingsData.reduce((sum, item) => sum + item.potential, 0)
-  const savingsPercentage = ((totalPotentialSavings / input.Total_Expenses) * 100).toFixed(1)
+  const savingsPercentage = formatPercent(totalPotentialSavings / safeNumber(input.Total_Expenses), 1)
   const highestSavingsCategory = potentialSavingsData.reduce((max, item) =>
     parseFloat(item.savings) > parseFloat(max.savings) ? item : max
   )
@@ -145,11 +146,11 @@ const Analytics = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-success">₹{totalPotentialSavings.toFixed(0)}</div>
+            <div className="text-2xl font-bold text-success">₹{formatNumber(totalPotentialSavings)}</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-success flex items-center">
                 <TrendingUp className="h-3 w-3 mr-1" />
-                {savingsPercentage}% optimization possible
+                {savingsPercentage} optimization possible
               </span>
             </p>
           </CardContent>
@@ -161,7 +162,7 @@ const Analytics = () => {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{(input.Expense_Efficiency * 100).toFixed(0)}%</div>
+            <div className="text-2xl font-bold">{formatPercent(input.Expense_Efficiency, 0)}</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-warning flex items-center">
                 <TrendingDown className="h-3 w-3 mr-1" />
@@ -180,7 +181,7 @@ const Analytics = () => {
             <div className="text-2xl font-bold">{highestSavingsCategory.category}</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-success">
-                {highestSavingsCategory.savings}% potential reduction
+                {highestSavingsCategory.savings} potential reduction
               </span>
             </p>
           </CardContent>
@@ -192,7 +193,7 @@ const Analytics = () => {
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-warning">{(input.Financial_Stress_Score * 100).toFixed(0)}%</div>
+            <div className="text-2xl font-bold text-warning">{formatPercent(input.Financial_Stress_Score, 0)}</div>
             <p className="text-xs text-muted-foreground">
               <span className="text-success">
                 {input.Financial_Stress_Score < 0.5 ? "Below average stress level" : "Above average stress"}
@@ -229,7 +230,7 @@ const Analytics = () => {
                     borderRadius: '8px'
                   }}
                   formatter={(value, name) => [
-                    name === 'potential' ? `₹${value}` : `${value}%`,
+                    name === 'potential' ? `₹${value}` : `${value}`,
                     name === 'potential' ? 'Potential Savings' : 'Savings %'
                   ]}
                 />
@@ -266,7 +267,7 @@ const Analytics = () => {
                       border: '1px solid #374151',
                       borderRadius: '8px'
                     }}
-                    formatter={(value) => [`₹${Number(value).toLocaleString()}`, '']}
+                    formatter={(value) => [`₹${formatNumber(value)}`, '']}
                   />
                   <Area type="monotone" dataKey="income" stackId="1" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.6} />
                   <Area type="monotone" dataKey="expenses" stackId="2" stroke="#EF4444" fill="#EF4444" fillOpacity={0.6} />
@@ -290,7 +291,7 @@ const Analytics = () => {
               <RadialBarChart cx="50%" cy="50%" innerRadius="60%" outerRadius="90%" data={[{ name: 'Efficiency', value: input.Expense_Efficiency * 100, fill: '#10B981' }]}>
                 <RadialBar dataKey="value" cornerRadius={10} fill="#10B981" />
                 <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="fill-foreground text-2xl font-bold">
-                  {(input.Expense_Efficiency * 100).toFixed(0)}%
+                  {formatPercent(input.Expense_Efficiency, 0)}
                 </text>
               </RadialBarChart>
             </ResponsiveContainer>
@@ -328,7 +329,7 @@ const Analytics = () => {
                   </div>
                   <div className="text-right">
                     <div className="font-semibold">
-                      {item.current}% / {item.target}%
+                      {item.current} / {item.target}%
                     </div>
                     <div className={`text-xs ${item.status === 'good' ? 'text-success' :
                       item.status === 'below' ? 'text-warning' :

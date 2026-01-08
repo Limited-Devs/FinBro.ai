@@ -6,7 +6,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip as RechartsTo
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsBarTooltip, ResponsiveContainer as BarResponsiveContainer } from 'recharts'
 import { useUserData } from '@/hooks/useUserData'
 import { useTrendsData } from '@/hooks/useTrendsData'
-import { cn } from '@/services/utils'
+import { cn, safeNumber, formatNumber } from '@/services/utils'
 
 // Animated counter hook for financial figures
 function useAnimatedCounter(end: number, duration: number = 1500) {
@@ -202,7 +202,7 @@ const Dashboard = () => {
           <CardContent>
             <div className="flex items-baseline gap-2">
               <span className="font-mono text-3xl font-bold tracking-tight">
-                ${animatedIncome.toLocaleString()}
+                ${formatNumber(animatedIncome)}
               </span>
               <span className="flex items-center text-xs text-success font-medium">
                 <ArrowUpRight className="h-3 w-3" />
@@ -227,7 +227,7 @@ const Dashboard = () => {
           <CardContent>
             <div className="flex items-baseline gap-2">
               <span className="font-mono text-3xl font-bold tracking-tight">
-                ${animatedSavings.toLocaleString()}
+                ${formatNumber(animatedSavings)}
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">Based on spending analysis</p>
@@ -248,13 +248,13 @@ const Dashboard = () => {
           <CardContent>
             <div className="flex items-baseline gap-2">
               <span className="font-mono text-3xl font-bold tracking-tight">
-                ${animatedGoal.toLocaleString()}
+                ${formatNumber(animatedGoal)}
               </span>
             </div>
             <div className="mt-3">
               <div className="flex items-center justify-between text-xs mb-1.5">
                 <span className="text-muted-foreground">Progress</span>
-                <span className="font-medium text-foreground">{savingsGoalProgress.toFixed(0)}%</span>
+                <span className="font-medium text-foreground">{formatNumber(savingsGoalProgress, 0)}%</span>
               </div>
               <Progress value={savingsGoalProgress} className="h-2" />
             </div>
@@ -281,7 +281,7 @@ const Dashboard = () => {
           <CardContent>
             <div className="flex items-baseline gap-2">
               <span className="font-mono text-3xl font-bold tracking-tight">
-                {(displayUserData.Financial_Stress_Score * 100)?.toFixed(0)}%
+                {formatNumber(safeNumber(displayUserData.Financial_Stress_Score) * 100, 0)}%
               </span>
               {displayUserData.Financial_Stress_Score <= 0.3 && (
                 <span className="flex items-center text-xs text-success font-medium">
@@ -319,7 +319,7 @@ const Dashboard = () => {
                   outerRadius={100}
                   innerRadius={60}
                   paddingAngle={2}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) => `${name} ${formatNumber(safeNumber(percent) * 100, 0)}%`}
                   labelLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
                 >
                   {expenseData.map((entry, index) => (
@@ -332,7 +332,7 @@ const Dashboard = () => {
                   ))}
                 </Pie>
                 <RechartsTooltip
-                  formatter={(value: number) => [`$${value.toLocaleString()}`, 'Amount']}
+                  formatter={(value: number) => [`$${formatNumber(value)}`, 'Amount']}
                 />
                 <Legend
                   verticalAlign="bottom"
@@ -385,7 +385,7 @@ const Dashboard = () => {
                     tickFormatter={(value) => `$${value / 1000}k`}
                   />
                   <RechartsBarTooltip
-                    formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                    formatter={(value: number) => [`$${formatNumber(value)}`, '']}
                     cursor={{ fill: 'hsl(var(--muted))', opacity: 0.3 }}
                   />
                   <Legend
@@ -447,7 +447,7 @@ const Dashboard = () => {
                 />
               </div>
               <span className="text-xs font-mono text-muted-foreground">
-                {(mlDisplayResults.savings_model?.confidence * 100).toFixed(0)}% confidence
+                {formatNumber(safeNumber(mlDisplayResults.savings_model?.confidence) * 100, 0)}% confidence
               </span>
             </div>
           </CardContent>
@@ -488,7 +488,7 @@ const Dashboard = () => {
                 "text-sm font-mono font-semibold",
                 mlDisplayResults.multi_task_model?.risk_score > 0.5 ? "text-destructive" : "text-success"
               )}>
-                {(mlDisplayResults.multi_task_model?.risk_score * 100).toFixed(1)}%
+                {formatNumber(safeNumber(mlDisplayResults.multi_task_model?.risk_score) * 100, 1)}%
               </span>
             </div>
           </CardContent>
@@ -508,7 +508,7 @@ const Dashboard = () => {
             <p className="text-sm leading-relaxed text-foreground">
               Focus on reducing <span className="font-semibold text-primary">{highestNonEssentialExpense}</span> expenses.
               Potential savings of <span className="font-mono font-semibold text-primary">
-                ${mlDisplayResults.multi_task_model?.recommended_savings_amount?.toLocaleString()}
+                ${formatNumber(mlDisplayResults.multi_task_model?.recommended_savings_amount)}
               </span> possible.
             </p>
             <div className="mt-4 pt-3 border-t border-border/50">

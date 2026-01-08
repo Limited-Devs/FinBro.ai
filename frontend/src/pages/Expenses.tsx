@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Car, Home, Utensils, Gamepad2, Heart, GraduationCap, IndianRupeeIcon, MoreHorizontal, Loader2, Shield } from "lucide-react"
 import { useUserData } from "@/hooks/useUserData"
+import { formatNumber, formatPercent, safeNumber } from '@/services/utils'
 
 const Expenses = () => {
   const { data: userData, isLoading: loading, error } = useUserData()
@@ -38,7 +39,7 @@ const Expenses = () => {
     {
       name: 'Rent',
       amount: userInput.Rent || 0,
-      percentage: ((userInput.Rent || 0) / (userInput.Income || 1)) * 100,
+      percentage: (userInput.Rent || 0) / (userInput.Income || 1) * 100,
       icon: Home,
       color: 'bg-blue-500',
       isEssential: true,
@@ -48,7 +49,7 @@ const Expenses = () => {
     {
       name: 'Groceries',
       amount: userInput.Groceries || 0,
-      percentage: ((userInput.Groceries || 0) / (userInput.Income || 1)) * 100,
+      percentage: (userInput.Groceries || 0) / (userInput.Income || 1) * 100,
       icon: ShoppingCart,
       color: 'bg-green-500',
       isEssential: true,
@@ -58,7 +59,7 @@ const Expenses = () => {
     {
       name: 'Utilities',
       amount: userInput.Utilities || 0,
-      percentage: ((userInput.Utilities || 0) / (userInput.Income || 1)) * 100,
+      percentage: (userInput.Utilities || 0) / (userInput.Income || 1) * 100,
       icon: DollarSign,
       color: 'bg-yellow-500',
       isEssential: true,
@@ -68,7 +69,7 @@ const Expenses = () => {
     {
       name: 'Transport',
       amount: userInput.Transport || 0,
-      percentage: ((userInput.Transport || 0) / (userInput.Income || 1)) * 100,
+      percentage: (userInput.Transport || 0) / (userInput.Income || 1) * 100,
       icon: Car,
       color: 'bg-purple-500',
       isEssential: false,
@@ -78,7 +79,7 @@ const Expenses = () => {
     {
       name: 'Healthcare',
       amount: userInput.Healthcare || 0,
-      percentage: ((userInput.Healthcare || 0) / (userInput.Income || 1)) * 100,
+      percentage: (userInput.Healthcare || 0) / (userInput.Income || 1) * 100,
       icon: Heart,
       color: 'bg-pink-500',
       isEssential: true,
@@ -88,7 +89,7 @@ const Expenses = () => {
     {
       name: 'Entertainment',
       amount: userInput.Entertainment || 0,
-      percentage: ((userInput.Entertainment || 0) / (userInput.Income || 1)) * 100,
+      percentage: (userInput.Entertainment || 0) / (userInput.Income || 1) * 100,
       icon: Gamepad2,
       color: 'bg-indigo-500',
       isEssential: false,
@@ -98,7 +99,7 @@ const Expenses = () => {
     {
       name: 'Eating Out',
       amount: userInput.Eating_Out || 0,
-      percentage: ((userInput.Eating_Out || 0) / (userInput.Income || 1)) * 100,
+      percentage: (userInput.Eating_Out || 0) / (userInput.Income || 1) * 100,
       icon: Utensils,
       color: 'bg-orange-500',
       isEssential: false,
@@ -108,7 +109,7 @@ const Expenses = () => {
     {
       name: 'Education',
       amount: userInput.Education || 0,
-      percentage: ((userInput.Education || 0) / (userInput.Income || 1)) * 100,
+      percentage: (userInput.Education || 0) / (userInput.Income || 1) * 100,
       icon: GraduationCap,
       color: 'bg-indigo-500',
       isEssential: true,
@@ -118,7 +119,7 @@ const Expenses = () => {
     {
       name: 'Miscellaneous',
       amount: userInput.Miscellaneous || 0,
-      percentage: ((userInput.Miscellaneous || 0) / (userInput.Income || 1)) * 100,
+      percentage: (userInput.Miscellaneous || 0) / (userInput.Income || 1) * 100,
       icon: MoreHorizontal,
       color: 'bg-gray-500',
       isEssential: false,
@@ -128,7 +129,7 @@ const Expenses = () => {
     {
       name: 'Insurance',
       amount: userInput.Insurance || 0,
-      percentage: ((userInput.Insurance || 0) / (userInput.Income || 1)) * 100,
+      percentage: (userInput.Insurance || 0) / (userInput.Income || 1) * 100,
       icon: Shield,
       color: 'bg-red-500',
       isEssential: true,
@@ -158,9 +159,9 @@ const Expenses = () => {
             <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
             <IndianRupeeIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>            <div className="text-2xl font-bold">₹{totalExpenses.toLocaleString()}</div>
+          <CardContent>            <div className="text-2xl font-bold">₹{formatNumber(totalExpenses)}</div>
             <p className="text-xs text-muted-foreground">
-              {((totalExpenses / (userInput.Income || 1)) * 100).toFixed(1)}% of total income
+              {formatPercent(totalExpenses / safeNumber(userInput.Income), 1)} of total income
             </p>
           </CardContent>
         </Card>
@@ -172,7 +173,7 @@ const Expenses = () => {
           </CardHeader>
           <CardContent>            <div className="text-2xl font-bold">₹{essentialExpenses.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              {totalExpenses > 0 ? ((essentialExpenses / totalExpenses) * 100).toFixed(1) : 0}% of total expenses
+              {totalExpenses > 0 ? formatPercent(essentialExpenses / totalExpenses, 1) : 0} of total expenses
             </p>
           </CardContent>
         </Card>
@@ -182,9 +183,9 @@ const Expenses = () => {
             <CardTitle className="text-sm font-medium">Non-Essential</CardTitle>
             <Gamepad2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>            <div className="text-2xl font-bold">₹{nonEssentialExpenses.toLocaleString()}</div>
+          <CardContent>            <div className="text-2xl font-bold">₹{formatNumber(nonEssentialExpenses)}</div>
             <p className="text-xs text-muted-foreground">
-              {totalExpenses > 0 ? ((nonEssentialExpenses / totalExpenses) * 100).toFixed(1) : 0}% of total expenses
+              {totalExpenses > 0 ? formatPercent(nonEssentialExpenses / totalExpenses, 1) : 0} of total expenses
             </p>
           </CardContent>
         </Card>
@@ -194,9 +195,9 @@ const Expenses = () => {
             <CardTitle className="text-sm font-medium">Savings Potential</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>            <div className="text-2xl font-bold text-success">₹{totalPotentialSavings.toLocaleString()}</div>
+          <CardContent>            <div className="text-2xl font-bold text-success">₹{formatNumber(totalPotentialSavings)}</div>
             <p className="text-xs text-success">
-              {totalExpenses > 0 ? ((totalPotentialSavings / totalExpenses) * 100).toFixed(1) : 0}% optimization possible
+              {totalExpenses > 0 ? formatPercent(totalPotentialSavings / totalExpenses, 1) : 0} optimization possible
             </p>
           </CardContent>
         </Card>
@@ -227,7 +228,7 @@ const Expenses = () => {
                       </div>
                       <div className="flex items-center space-x-2 mt-1">
                         <span className="text-sm text-muted-foreground">
-                          {category.percentage.toFixed(1)}% of total
+                          {formatPercent(category.percentage / 100, 1)} of total
                         </span>
                         {category.trend === 'up' && <TrendingUp className="h-3 w-3 text-destructive" />}
                         {category.trend === 'down' && <TrendingDown className="h-3 w-3 text-success" />}
@@ -235,10 +236,10 @@ const Expenses = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-semibold">₹{category.amount.toLocaleString()}</div>
+                    <div className="font-semibold">₹{formatNumber(category.amount)}</div>
                     {category.potentialSavings > 0 && (
                       <div className="text-xs text-success">
-                        Save ₹{category.potentialSavings.toFixed(0)}
+                        Save ₹{formatNumber(category.potentialSavings)}
                       </div>
                     )}
                   </div>
@@ -285,7 +286,7 @@ const Expenses = () => {
                       <div>
                         <h4 className={`font-semibold ${colorClasses.text}`}>{category.name} Optimization</h4>
                         <p className="text-sm text-muted-foreground mt-1">
-                          Potential savings: ₹{category.potentialSavings.toFixed(0)}/month. {tips[category.name] || 'Review spending patterns for optimization opportunities.'}
+                          Potential savings: ₹{formatNumber(category.potentialSavings)}/month. {tips[category.name] || 'Review spending patterns for optimization opportunities.'}
                         </p>
                         <Button
                           variant="outline"
@@ -325,7 +326,7 @@ const Expenses = () => {
                   <div className="flex justify-between text-sm">
                     <span className="font-medium">{category.name}</span>
                     <span className="text-muted-foreground">
-                      {category.amount.toLocaleString()} / {budgetLimit.toLocaleString()}
+                      {formatNumber(category.amount)} / {formatNumber(budgetLimit)}
                     </span>
                   </div>
                   <Progress
@@ -333,7 +334,7 @@ const Expenses = () => {
                     className={`h-2 ${spentPercentage > 90 ? 'bg-destructive/20' : spentPercentage > 75 ? 'bg-warning/20' : 'bg-success/20'}`}
                   />
                   <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>{spentPercentage.toFixed(0)}% used</span>
+                    <span>{formatPercent(spentPercentage / 100, 0)} used</span>
                     <Badge
                       variant={spentPercentage > 90 ? 'destructive' : spentPercentage > 75 ? 'secondary' : 'outline'}
                       className="text-xs"

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar"
 
 const mainItems = [
-  { title: "Dashboard", url: "/", icon: Home },
+  { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "Expenses", url: "/expenses", icon: CreditCard },
   { title: "Savings Goals", url: "/savings", icon: Target },
@@ -87,27 +87,29 @@ export function AppSidebar() {
           "p-4 border-b border-sidebar-border",
           isCollapsed ? "px-2" : "px-4"
         )}>
-          {!isCollapsed ? (
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary via-primary/80 to-secondary/60 rounded-xl 
+          <NavLink to="/" className="block outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl overflow-hidden transition-opacity hover:opacity-90">
+            {!isCollapsed ? (
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-primary via-primary/80 to-secondary/60 rounded-xl 
+                  flex items-center justify-center shadow-glow-sm">
+                  <TrendingUp className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <div>
+                  <h2 className="font-display font-bold text-lg text-sidebar-foreground tracking-tight">
+                    FinBro<span className="text-primary">.ai</span>
+                  </h2>
+                  <p className="text-[10px] text-muted-foreground -mt-0.5 uppercase tracking-widest">
+                    Wealth Intelligence
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="w-10 h-10 mx-auto bg-gradient-to-br from-primary via-primary/80 to-secondary/60 rounded-xl 
                 flex items-center justify-center shadow-glow-sm">
                 <TrendingUp className="h-5 w-5 text-primary-foreground" />
               </div>
-              <div>
-                <h2 className="font-display font-bold text-lg text-sidebar-foreground tracking-tight">
-                  FinBro<span className="text-primary">.ai</span>
-                </h2>
-                <p className="text-[10px] text-muted-foreground -mt-0.5 uppercase tracking-widest">
-                  Wealth Intelligence
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="w-10 h-10 mx-auto bg-gradient-to-br from-primary via-primary/80 to-secondary/60 rounded-xl 
-              flex items-center justify-center shadow-glow-sm">
-              <TrendingUp className="h-5 w-5 text-primary-foreground" />
-            </div>
-          )}
+            )}
+          </NavLink>
         </div>
 
         {/* Navigation */}

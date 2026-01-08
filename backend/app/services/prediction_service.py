@@ -15,6 +15,7 @@ from app.services.ml_model_service import MLModelService
 from app.utils.feature_processor import FeatureProcessor
 from app.utils.logging import get_logger
 from app.config import get_config
+from app.utils.mock_data import generate_mock_predictions, generate_mock_trends
 
 logger = get_logger(__name__)
 
@@ -72,7 +73,8 @@ class PredictionService:
         predictions = self.model_service.predict(features)
         
         # Save to database (async)
-        self._save_prediction(input_data, predictions, user_id)
+        if user_id != 'demo':
+            self._save_prediction(input_data, predictions, user_id)
         
         logger.info(
             f"Prediction completed",
@@ -97,6 +99,8 @@ class PredictionService:
             # Log but don't fail the prediction
             logger.warning(f"Failed to save prediction: {e}")
     
+
+
     def get_predictions(
         self,
         user_id: Optional[str] = None,
@@ -114,6 +118,16 @@ class PredictionService:
         Returns:
             Dictionary with predictions and metadata
         """
+        if user_id == 'demo':
+            # Return realistic mock data for demo users
+            mock_data = generate_mock_predictions(max(limit, 10))
+            # Handle manual pagination for mock data if needed, but simple slice is fine
+            paginated_data = mock_data[offset : offset + limit]
+            return {
+                "total_predictions": len(mock_data),
+                "predictions": paginated_data
+            }
+
         predictions = self.repository.get_all(user_id, limit, offset)
         
         return {
@@ -123,4 +137,19 @@ class PredictionService:
     
     def get_latest_prediction(self, user_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
         """Get the most recent prediction."""
+        if user_id == 'demo':
+            mock_data = generate_mock_predictions(1)
+            return mock_data[0] if mock_data else None
+            
         return self.repository.get_latest(user_id)
+
+    def get_monthly_trends(
+        self,
+        user_id: Optional[str] = None,
+        months: int = 6
+    ) -> List[Dict[str, Any]]:
+        """Get monthly financial trends."""
+        if user_id == 'demo':
+            return generate_mock_trends(months)
+            
+        return self.repository.get_monthly_trends(user_id=user_id, months=months)

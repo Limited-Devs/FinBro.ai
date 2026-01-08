@@ -4,9 +4,11 @@ import { Bell, Search, Sun, Moon, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useTheme } from "@/contexts/ThemeContext"
+import { useAuth } from "@/contexts/AuthContext"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { theme, toggleTheme } = useTheme()
+  const { isDemo } = useAuth()
 
   return (
     <SidebarProvider>
@@ -36,6 +38,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </div>
 
             <div className="flex items-center gap-2">
+              {/* Demo Mode Indicator */}
+              {isDemo && (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-100 border border-yellow-200 mr-2">
+                  <span className="text-xs font-bold text-yellow-800">DEMO MODE</span>
+                </div>
+              )}
+
               {/* AI Status Indicator */}
               <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 border border-secondary/20 mr-2">
                 <Sparkles className="h-3.5 w-3.5 text-secondary animate-pulse" />

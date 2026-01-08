@@ -78,9 +78,16 @@ def predict():
             "details": {"validation_errors": errors}
         }), 400
     
+    # Get user context
+    user_id = request.headers.get('X-User-ID')
+    is_demo = request.headers.get('X-Demo-Mode', 'false').lower() == 'true'
+    
+    if is_demo:
+        user_id = 'demo'
+    
     # Get prediction
     service = get_prediction_service()
-    result = service.predict(prediction_request)
+    result = service.predict(prediction_request, user_id=user_id)
     
     return jsonify(result)
 
@@ -101,8 +108,13 @@ def get_data():
     limit = min(max(1, limit), 1000)  # 1-1000
     offset = max(0, offset)
     
+    user_id = request.headers.get('X-User-ID')
+    is_demo = request.headers.get('X-Demo-Mode', 'false').lower() == 'true'
+    if is_demo:
+        user_id = 'demo'
+
     service = get_prediction_service()
-    result = service.get_predictions(limit=limit, offset=offset)
+    result = service.get_predictions(user_id=user_id, limit=limit, offset=offset)
     
     return jsonify(result)
 
@@ -118,8 +130,13 @@ def get_trends():
     months = request.args.get('months', 6, type=int)
     months = min(max(1, months), 12)  # 1-12
     
+    user_id = request.headers.get('X-User-ID')
+    is_demo = request.headers.get('X-Demo-Mode', 'false').lower() == 'true'
+    if is_demo:
+        user_id = 'demo'
+
     service = get_prediction_service()
-    monthly_data = service.repository.get_monthly_trends(months=months)
+    monthly_data = service.get_monthly_trends(user_id=user_id, months=months)
     
     return jsonify({
         "monthly_data": monthly_data,

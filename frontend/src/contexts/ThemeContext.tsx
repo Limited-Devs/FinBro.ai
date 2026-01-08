@@ -13,13 +13,14 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     const saved = localStorage.getItem('theme') as Theme
-    if(saved) return saved
+    if (saved) return saved
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   })
 
   useEffect(() => {
     localStorage.setItem('theme', theme)
-    document.documentElement.classList.toggle('dark', theme === 'dark')
+    // Toggle 'light' class since dark is the default (:root) and light mode uses .light selector
+    document.documentElement.classList.toggle('light', theme === 'light')
   }, [theme])
 
   const toggleTheme = () => {

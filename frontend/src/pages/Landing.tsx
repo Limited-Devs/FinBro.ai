@@ -137,14 +137,24 @@ const Landing = () => {
                         <a href="#how-it-works" className="text-black font-semibold hover:text-[#8B5CF6] transition-colors">How it works</a>
                         <a href="#pricing" className="text-black font-semibold hover:text-[#8B5CF6] transition-colors">Pricing</a>
                     </div>
-                    <Link to="/dashboard">
-                        <Button
-                            className="bg-black text-white font-bold px-6 py-2 rounded-full hover:bg-[#8B5CF6] transition-colors border-2 border-black"
-                            style={{ boxShadow: '4px 4px 0 0 #8B5CF6' }}
-                        >
-                            Get Started →
-                        </Button>
-                    </Link>
+                    <div className="flex items-center gap-4">
+                        <Link to="/login">
+                            <Button
+                                variant="ghost"
+                                className="text-black font-bold hover:bg-gray-100 hover:text-black"
+                            >
+                                Log In
+                            </Button>
+                        </Link>
+                        <Link to="/signup">
+                            <Button
+                                className="bg-black text-white font-bold px-6 py-2 rounded-full hover:bg-[#8B5CF6] transition-colors border-2 border-black"
+                                style={{ boxShadow: '4px 4px 0 0 #8B5CF6' }}
+                            >
+                                Sign Up
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
             </nav>
 
@@ -196,7 +206,7 @@ const Landing = () => {
                   ${heroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}
                 `}
                             >
-                                <Link to="/dashboard">
+                                <Link to="/signup">
                                     <Button
                                         size="lg"
                                         className="bg-black text-white font-bold px-8 py-6 text-lg rounded-full hover:bg-white hover:text-black transition-all border-2 border-black"
@@ -204,6 +214,16 @@ const Landing = () => {
                                     >
                                         Get Started Free
                                         <ArrowRight className="ml-2 w-5 h-5" />
+                                    </Button>
+                                </Link>
+                                <Link to="/login">
+                                    <Button
+                                        size="lg"
+                                        variant="outline"
+                                        className="bg-white text-black font-bold px-8 py-6 text-lg rounded-full hover:bg-gray-50 transition-all border-2 border-black"
+                                        style={{ boxShadow: '6px 6px 0 0 #A7F3D0' }}
+                                    >
+                                        Try Demo
                                     </Button>
                                 </Link>
                             </div>

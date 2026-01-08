@@ -73,10 +73,12 @@ def register_blueprints(app: Flask) -> None:
     from app.api.routes.prediction import prediction_bp
     from app.api.routes.chat import chat_bp
     from app.api.routes.health import health_bp
+    from app.api.routes.onboarding import onboarding_bp
     
     app.register_blueprint(prediction_bp, url_prefix='/api')
     app.register_blueprint(chat_bp, url_prefix='/api/chat')
     app.register_blueprint(health_bp, url_prefix='/api')
+    app.register_blueprint(onboarding_bp, url_prefix='/api')
     
     # Serve React static files
     @app.route('/')

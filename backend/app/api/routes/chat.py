@@ -11,6 +11,7 @@ from app.extensions import limiter
 from app.models.schemas import ChatRequest
 from app.services.chat_service import ChatService
 from app.utils.logging import get_logger
+from app.utils.request_helpers import format_validation_error, get_user_context
 
 logger = get_logger(__name__)
 
@@ -49,23 +50,13 @@ def chat():
     try:
         chat_request = ChatRequest(**data)
     except PydanticValidationError as e:
-        errors = []
-        for err in e.errors():
-            field = '.'.join(str(loc) for loc in err['loc'])
-            errors.append({
-                'field': field,
-                'message': err['msg']
-            })
-        
-        return jsonify({
-            "error": True,
-            "error_code": "VALIDATION_ERROR",
-            "message": "Request validation failed",
-            "details": {"validation_errors": errors}
-        }), 400
+        return jsonify(format_validation_error(e)), 400
+    
+    # Get user context
+    user_id, _ = get_user_context(request)
     
     # Get chat response
     service = get_chat_service()
-    response_text = service.chat(chat_request)
+    response_text = service.chat(chat_request, user_id=user_id)
     
     return jsonify({"response": response_text})

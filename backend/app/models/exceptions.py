@@ -5,6 +5,20 @@ All exceptions inherit from FinBroException for consistent error handling.
 Each exception type maps to appropriate HTTP status codes.
 """
 from typing import Optional, Dict, Any
+from enum import Enum
+
+
+class ErrorCode(str, Enum):
+    INVALID_REQUEST = "INVALID_REQUEST"
+    VALIDATION_ERROR = "VALIDATION_ERROR"
+    DATABASE_ERROR = "DATABASE_ERROR"
+    ML_MODEL_ERROR = "ML_MODEL_ERROR"
+    RATE_LIMIT_EXCEEDED = "RATE_LIMIT_EXCEEDED"
+    EXTERNAL_SERVICE_ERROR = "EXTERNAL_SERVICE_ERROR"
+    NOT_FOUND = "NOT_FOUND"
+    INTERNAL_ERROR = "INTERNAL_ERROR"
+    CALCULATION_ERROR = "CALCULATION_ERROR"
+    AUTH_REQUIRED = "AUTH_REQUIRED"
 
 
 class FinBroException(Exception):

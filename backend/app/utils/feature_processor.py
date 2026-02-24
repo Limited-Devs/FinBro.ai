@@ -36,7 +36,18 @@ class FeatureProcessor:
     
     Uses the trained FeatureEngineer artifact to ensure
     inference logic matches training logic exactly.
+    
+    Uses singleton pattern to avoid repeated disk I/O.
     """
+    
+    _instance: 'FeatureProcessor' = None
+    _initialized: bool = False
+    
+    def __new__(cls, *args, **kwargs):
+        """Singleton pattern to avoid repeated unpickling."""
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
     
     def __init__(self, feature_info_path: str = None):
         """
@@ -45,6 +56,9 @@ class FeatureProcessor:
         Args:
             feature_info_path: Path to feature info (loading from artifact instead)
         """
+        if self._initialized:
+            return
+            
         # Path to trained feature engineer artifact
         self.artifact_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),
@@ -53,6 +67,8 @@ class FeatureProcessor:
         
         self.engineer = None
         self._load_engineer()
+        
+        FeatureProcessor._initialized = True
             
     def _load_engineer(self):
         """Load the trained feature engineer."""
@@ -90,7 +106,7 @@ class FeatureProcessor:
             numpy array of shape (1, num_features)
         """
         if self.engineer is None:
-            raise RuntimeError("Feature processor not initialized check model artifacts")
+            raise RuntimeError("Feature processor not initialized. Please check model artifacts.")
             
         # Convert single dict to DataFrame
         # We need to make sure types match what pandas expects

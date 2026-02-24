@@ -12,6 +12,8 @@ from app.models.schemas import ChatRequest
 from app.models.exceptions import ExternalServiceError, NotFoundError
 from app.repositories.prediction_repository import PredictionRepository
 from app.utils.logging import get_logger
+from app.utils.request_helpers import DEMO_USER_ID
+from app.utils.mock_data import generate_mock_predictions
 from app.config import get_config
 
 logger = get_logger(__name__)
@@ -80,16 +82,28 @@ class ChatService:
                 model=self.model_name,
                 contents=prompt
             )
-            
-            ai_response = response.text
-            
+
+            # Ensure the AI returned a non-empty response; treat empty as an error.
+            text = getattr(response, "text", None)
+            if text is None or not str(text).strip():
+                logger.error(
+                    "Gemini API returned an empty response",
+                    extra={"extra_data": {"prompt_length": len(prompt)}},
+                )
+                raise ExternalServiceError(
+                    "Received empty response from Gemini",
+                    service_name="gemini",
+                    details={"reason": "empty_response"},
+                )
+
+            ai_response = str(text)
+
             logger.info(
                 f"Chat response generated",
                 extra={'extra_data': {'response_length': len(ai_response)}}
             )
-            
+
             return ai_response
-        
         except Exception as e:
             logger.error(f"Gemini API error: {e}")
             raise ExternalServiceError(
@@ -100,6 +114,15 @@ class ChatService:
     
     def _get_user_context(self, user_id: Optional[str]) -> Optional[Dict[str, Any]]:
         """Get latest prediction for user context."""
+        if user_id == DEMO_USER_ID:
+            mock_data = generate_mock_predictions(1)
+            if mock_data:
+                return {
+                    "input": mock_data[0].get("input_data", {}),
+                    "output": mock_data[0].get("output_data", {})
+                }
+            return None
+        
         try:
             latest = self.repository.get_latest(user_id)
             

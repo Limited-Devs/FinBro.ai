@@ -15,6 +15,7 @@ from app.extensions import limiter
 from app.models.schemas import PredictionRequest
 from app.services.prediction_service import PredictionService
 from app.utils.logging import get_logger
+from app.utils.request_helpers import get_user_context, format_validation_error, DEMO_USER_ID
 
 load_dotenv()
 
@@ -51,11 +52,10 @@ def get_user_status():
     Returns:
         { onboarding_completed: boolean }
     """
-    user_id = request.headers.get('X-User-ID')
-    is_demo = request.headers.get('X-Demo-Mode', 'false').lower() == 'true'
+    user_id, is_demo = get_user_context(request)
     
     # Demo users are always "onboarded"
-    if is_demo or user_id == 'demo':
+    if is_demo:
         return jsonify({
             "onboarding_completed": True,
             "is_demo": True
@@ -122,10 +122,9 @@ def complete_onboarding():
     
     Returns prediction results.
     """
-    user_id = request.headers.get('X-User-ID')
-    is_demo = request.headers.get('X-Demo-Mode', 'false').lower() == 'true'
+    user_id, is_demo = get_user_context(request)
     
-    if is_demo or user_id == 'demo':
+    if is_demo:
         return jsonify({
             "error": True,
             "message": "Demo users cannot complete onboarding"
@@ -192,21 +191,8 @@ def complete_onboarding():
     try:
         prediction_request = PredictionRequest(**data)
     except PydanticValidationError as e:
-        errors = []
-        for err in e.errors():
-            field = '.'.join(str(loc) for loc in err['loc'])
-            errors.append({
-                'field': field,
-                'message': err['msg']
-            })
-        
-        logger.warning(f"Onboarding validation failed for user {user_id}: {errors}")
-        return jsonify({
-            "error": True,
-            "error_code": "VALIDATION_ERROR",
-            "message": "Request validation failed",
-            "details": {"validation_errors": errors}
-        }), 400
+        logger.warning(f"Onboarding validation failed for user {user_id}: {e.errors()}")
+        return jsonify(format_validation_error(e)), 400
     
     try:
         # Get prediction from ML models

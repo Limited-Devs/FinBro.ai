@@ -210,41 +210,13 @@ class PredictionRepository:
     
     def _format_supabase_record(self, record: Dict[str, Any]) -> Dict[str, Any]:
         """Format Supabase record to standard structure."""
-        # Unpack JSONB fields
         input_data = record.get("input_data", {})
         output_data = record.get("output_data", {})
         
         return {
             "id": record["id"],
             "timestamp": record["timestamp"],
-            "input_data": {
-                "Income": input_data.get("Income"),
-                "Age": input_data.get("Age"),
-                "Dependents": input_data.get("Dependents"),
-                "Occupation": input_data.get("Occupation"),
-                "City_Tier": input_data.get("City_Tier"),
-                "Rent": input_data.get("Rent"),
-                "Loan_Repayment": input_data.get("Loan_Repayment"),
-                "Insurance": input_data.get("Insurance"),
-                "Groceries": input_data.get("Groceries"),
-                "Transport": input_data.get("Transport"),
-                "Eating_Out": input_data.get("Eating_Out"),
-                "Entertainment": input_data.get("Entertainment"),
-                "Utilities": input_data.get("Utilities"),
-                "Healthcare": input_data.get("Healthcare"),
-                "Education": input_data.get("Education"),
-                "Miscellaneous": input_data.get("Miscellaneous"),
-                "Desired_Savings_Percentage": input_data.get("Desired_Savings_Percentage"),
-                "Disposable_Income": input_data.get("Disposable_Income"),
-                "Potential_Savings_Groceries": input_data.get("Potential_Savings_Groceries"),
-                "Potential_Savings_Transport": input_data.get("Potential_Savings_Transport"),
-                "Potential_Savings_Eating_Out": input_data.get("Potential_Savings_Eating_Out"),
-                "Potential_Savings_Entertainment": input_data.get("Potential_Savings_Entertainment"),
-                "Potential_Savings_Utilities": input_data.get("Potential_Savings_Utilities"),
-                "Potential_Savings_Healthcare": input_data.get("Potential_Savings_Healthcare"),
-                "Potential_Savings_Education": input_data.get("Potential_Savings_Education"),
-                "Potential_Savings_Miscellaneous": input_data.get("Potential_Savings_Miscellaneous"),
-            },
+            "input_data": input_data,
             "output_data": {
                 "savings_model": output_data.get("savings_model", {}),
                 "amount_model": output_data.get("amount_model", {}),

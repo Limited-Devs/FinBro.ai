@@ -12,6 +12,7 @@ from app.extensions import limiter
 from app.models.schemas import PredictionRequest
 from app.services.prediction_service import PredictionService
 from app.utils.logging import get_logger
+from app.utils.request_helpers import get_user_context, format_validation_error
 
 logger = get_logger(__name__)
 
@@ -63,27 +64,10 @@ def predict():
     try:
         prediction_request = PredictionRequest(**data)
     except PydanticValidationError as e:
-        errors = []
-        for err in e.errors():
-            field = '.'.join(str(loc) for loc in err['loc'])
-            errors.append({
-                'field': field,
-                'message': err['msg']
-            })
-        
-        return jsonify({
-            "error": True,
-            "error_code": "VALIDATION_ERROR",
-            "message": "Request validation failed",
-            "details": {"validation_errors": errors}
-        }), 400
+        return jsonify(format_validation_error(e)), 400
     
     # Get user context
-    user_id = request.headers.get('X-User-ID')
-    is_demo = request.headers.get('X-Demo-Mode', 'false').lower() == 'true'
-    
-    if is_demo:
-        user_id = 'demo'
+    user_id, _ = get_user_context(request)
     
     # Get prediction
     service = get_prediction_service()
@@ -108,10 +92,7 @@ def get_data():
     limit = min(max(1, limit), 1000)  # 1-1000
     offset = max(0, offset)
     
-    user_id = request.headers.get('X-User-ID')
-    is_demo = request.headers.get('X-Demo-Mode', 'false').lower() == 'true'
-    if is_demo:
-        user_id = 'demo'
+    user_id, _ = get_user_context(request)
 
     service = get_prediction_service()
     result = service.get_predictions(user_id=user_id, limit=limit, offset=offset)
@@ -130,10 +111,7 @@ def get_trends():
     months = request.args.get('months', 6, type=int)
     months = min(max(1, months), 12)  # 1-12
     
-    user_id = request.headers.get('X-User-ID')
-    is_demo = request.headers.get('X-Demo-Mode', 'false').lower() == 'true'
-    if is_demo:
-        user_id = 'demo'
+    user_id, _ = get_user_context(request)
 
     service = get_prediction_service()
     monthly_data = service.get_monthly_trends(user_id=user_id, months=months)

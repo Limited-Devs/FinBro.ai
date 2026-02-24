@@ -14,6 +14,7 @@ from app.repositories.prediction_repository import PredictionRepository
 from app.services.ml_model_service import MLModelService
 from app.utils.feature_processor import FeatureProcessor
 from app.utils.logging import get_logger
+from app.utils.request_helpers import DEMO_USER_ID
 from app.config import get_config
 from app.utils.mock_data import generate_mock_predictions, generate_mock_trends
 
@@ -28,10 +29,24 @@ class PredictionService:
     - Feature processing
     - Model predictions
     - Result persistence
+    
+    Uses singleton pattern to avoid repeated initialization.
     """
+    
+    _instance: 'PredictionService' = None
+    _initialized: bool = False
+    
+    def __new__(cls, *args, **kwargs):
+        """Singleton pattern to avoid repeated initialization."""
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
     
     def __init__(self):
         """Initialize the prediction service."""
+        if self._initialized:
+            return
+            
         config = get_config()
         
         self.repository = PredictionRepository(
@@ -39,6 +54,8 @@ class PredictionService:
         )
         self.model_service = MLModelService(model_dir=config.MODEL_DIR)
         self.feature_processor = FeatureProcessor(config.FEATURE_INFO_FILE)
+        
+        PredictionService._initialized = True
     
     def predict(
         self, 
@@ -73,7 +90,7 @@ class PredictionService:
         predictions = self.model_service.predict(features)
         
         # Save to database (async)
-        if user_id != 'demo':
+        if user_id != DEMO_USER_ID:
             self._save_prediction(input_data, predictions, user_id)
         
         logger.info(
@@ -118,10 +135,8 @@ class PredictionService:
         Returns:
             Dictionary with predictions and metadata
         """
-        if user_id == 'demo':
-            # Return realistic mock data for demo users
+        if user_id == DEMO_USER_ID:
             mock_data = generate_mock_predictions(max(limit, 10))
-            # Handle manual pagination for mock data if needed, but simple slice is fine
             paginated_data = mock_data[offset : offset + limit]
             return {
                 "total_predictions": len(mock_data),
@@ -137,7 +152,7 @@ class PredictionService:
     
     def get_latest_prediction(self, user_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
         """Get the most recent prediction."""
-        if user_id == 'demo':
+        if user_id == DEMO_USER_ID:
             mock_data = generate_mock_predictions(1)
             return mock_data[0] if mock_data else None
             
@@ -149,7 +164,7 @@ class PredictionService:
         months: int = 6
     ) -> List[Dict[str, Any]]:
         """Get monthly financial trends."""
-        if user_id == 'demo':
+        if user_id == DEMO_USER_ID:
             return generate_mock_trends(months)
             
         return self.repository.get_monthly_trends(user_id=user_id, months=months)

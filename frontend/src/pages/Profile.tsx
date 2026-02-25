@@ -7,11 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { User, Edit, Save, Shield, Bell, CreditCard, Target, TrendingUp, Loader2 } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useUserData } from "@/hooks/useUserData"
 
 const Profile = () => {
   const { data: userData, isLoading: loading, error } = useUserData()
+  const predictions = userData?.predictions ?? []
+  const latestPrediction = predictions[predictions.length - 1]
   const [isEditing, setIsEditing] = useState(false)
   const [formData, setFormData] = useState({
     name: "John Smith",
@@ -24,10 +26,11 @@ const Profile = () => {
     cityTier: "",
     savingsGoal: 0,
   })
+
   // Update form data when userData loads
-  useState(() => {
-    if (userData?.predictions?.[0]?.input) {
-      const userInput = userData.predictions[0].input
+  useEffect(() => {
+    if (latestPrediction?.input) {
+      const userInput = latestPrediction.input
       setFormData(prev => ({
         ...prev,
         income: userInput.Income || 0,
@@ -38,7 +41,7 @@ const Profile = () => {
         savingsGoal: userInput.Desired_Savings_Percentage || 0,
       }))
     }
-  })
+  }, [latestPrediction])
 
   if (loading) {
     return (
@@ -65,8 +68,8 @@ const Profile = () => {
     // Here you would typically save to your backend/Supabase
     console.log('Saving profile data:', formData)
   }  // Calculate financial health based on real user data
-  const userInput = userData?.predictions?.[0]?.input
-  const userOutput = userData?.predictions?.[0]?.output
+  const userInput = latestPrediction?.input
+  const userOutput = latestPrediction?.output
   
   const financialHealth = {
     score: userOutput?.multi_task_model?.risk_score ? 

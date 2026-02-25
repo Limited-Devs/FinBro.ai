@@ -1,9 +1,4 @@
-"""
-Health check API route.
 
-Endpoints:
-- GET /api/health - Check application health
-"""
 import time
 from flask import Blueprint, jsonify, current_app
 

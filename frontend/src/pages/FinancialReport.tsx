@@ -46,6 +46,8 @@ const FinancialReport = () => {
   const [showResults, setShowResults] = useState(false)
   const { data: userData, isLoading: userDataLoading } = useUserData()
   const { toast } = useToast()
+  const predictions = userData?.predictions ?? []
+  const latestPrediction = predictions[predictions.length - 1]
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -72,8 +74,8 @@ const FinancialReport = () => {
 
   // Load data from user_data.json when available
   useEffect(() => {
-    if (userData?.predictions?.[0]?.input) {
-      const input = userData.predictions[0].input
+    if (latestPrediction?.input) {
+      const input = latestPrediction.input
       form.reset({
         income: input.Income,
         age: input.Age,
@@ -94,7 +96,7 @@ const FinancialReport = () => {
         desiredSavingsPercentage: input.Desired_Savings_Percentage,
       })
     }
-  }, [form, userData])
+  }, [form, latestPrediction])
 
   const calculateAdditionalFields = (data: FormData): PredictionInput => {
     const totalExpenses = data.rent + data.loanRepayment + data.insurance + data.groceries +

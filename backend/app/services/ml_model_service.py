@@ -1,13 +1,4 @@
-"""
-ML Model service for loading and running predictions.
 
-Features:
-- XGBoost model support (primary)
-- Fallback to TensorFlow if available
-- Singleton pattern for model loading
-- Lazy initialization
-- Model health checks
-"""
 import os
 import json
 import pickle
@@ -34,37 +25,25 @@ logger = get_logger(__name__)
 
 
 class MLModelService:
-    """
-    Service for ML model operations.
-    
-    Uses singleton pattern to ensure models are loaded only once.
-    Supports both XGBoost (primary) and TensorFlow models.
-    """
-    
     _instance: Optional['MLModelService'] = None
-    _models: Dict[str, Any] = {}
+    _models: Optional[Dict[str, Any]] = None
     _initialized: bool = False
-    _model_type: str = 'none'  # 'xgboost', 'tensorflow', or 'none'
+    _model_type: str = 'none'
     _feature_engineer = None
     
     # Legacy TensorFlow model names
     TF_MODEL_NAMES = ['savings', 'amount', 'multi_task']
     
     def __new__(cls, *args, **kwargs):
-        """Singleton pattern implementation."""
         if cls._instance is None:
             cls._instance = super().__new__(cls)
         return cls._instance
-    
+
     def __init__(self, model_dir: str = None):
-        """
-        Initialize the ML model service.
-        
-        Args:
-            model_dir: Directory containing trained models
-        """
         if self._initialized:
             return
+
+        self._models = {}
         
         self.model_dir = model_dir or os.path.join(
             os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),

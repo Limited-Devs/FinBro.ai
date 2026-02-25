@@ -1,11 +1,4 @@
-"""
-Prediction service with business logic.
 
-Orchestrates:
-- Input validation and transformation
-- ML model predictions
-- Data persistence
-"""
 from typing import Dict, Any, Optional, List
 
 from app.models.schemas import PredictionRequest, PredictionResponse

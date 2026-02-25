@@ -1,9 +1,4 @@
-"""
-Custom exception hierarchy for FinBro.ai.
 
-All exceptions inherit from FinBroException for consistent error handling.
-Each exception type maps to appropriate HTTP status codes.
-"""
 from typing import Optional, Dict, Any
 from enum import Enum
 

@@ -1,8 +1,4 @@
-"""
-Global error handler middleware.
 
-Provides consistent error responses across all endpoints.
-"""
 from flask import Flask, jsonify, current_app, g
 from werkzeug.exceptions import HTTPException
 from pydantic import ValidationError as PydanticValidationError

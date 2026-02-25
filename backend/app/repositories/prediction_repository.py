@@ -12,6 +12,7 @@ from datetime import datetime
 from supabase import create_client, Client
 
 from app.models.exceptions import DatabaseError
+from app.utils.financial_fields import TREND_EXPENSE_FIELDS
 from app.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -319,17 +320,10 @@ class PredictionRepository:
                         "month": month_name,
                         "month_key": month_key,
                         "income": input_data.get("Income", 0) or 0,
-                        "expenses": sum([
-                            input_data.get("Rent", 0) or 0,
-                            input_data.get("Groceries", 0) or 0,
-                            input_data.get("Utilities", 0) or 0,
-                            input_data.get("Transport", 0) or 0,
-                            input_data.get("Insurance", 0) or 0,
-                            input_data.get("Eating_Out", 0) or 0,
-                            input_data.get("Healthcare", 0) or 0,
-                            input_data.get("Entertainment", 0) or 0,
-                            input_data.get("Miscellaneous", 0) or 0,
-                        ]),
+                        "expenses": sum(
+                            input_data.get(field, 0) or 0
+                            for field in TREND_EXPENSE_FIELDS
+                        ),
                         "actual_savings": input_data.get("Disposable_Income", 0) or 0,
                         "target_savings": output_data.get("amount_model", {}).get("recommended_savings", 0) or 0
                     }

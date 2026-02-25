@@ -1,12 +1,4 @@
-"""
-Onboarding API routes.
-
-Endpoints:
-- GET /api/user/status - Get user onboarding status
-- POST /api/onboarding - Complete onboarding with financial profile
-"""
 from flask import Blueprint, request, jsonify, current_app
-from pydantic import ValidationError as PydanticValidationError
 import os
 from supabase import create_client, Client
 from dotenv import load_dotenv
@@ -15,7 +7,12 @@ from app.extensions import limiter
 from app.models.schemas import PredictionRequest
 from app.services.prediction_service import PredictionService
 from app.utils.logging import get_logger
-from app.utils.request_helpers import get_user_context, format_validation_error, DEMO_USER_ID
+from app.utils.financial_fields import (
+    OCCUPATION_MAPPING,
+    EXPENSE_FIELDS,
+    VARIABLE_EXPENSE_FIELDS,
+)
+from app.utils.request_helpers import get_user_context, to_float
 
 load_dotenv()
 
@@ -23,25 +20,70 @@ logger = get_logger(__name__)
 
 onboarding_bp = Blueprint('onboarding', __name__)
 
-# Supabase client
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_ANON_KEY")
 
 def get_supabase_client() -> Client:
-    """Get Supabase client."""
     if not SUPABASE_URL or not SUPABASE_KEY:
         raise ValueError("Missing Supabase configuration")
     return create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Lazy initialization of prediction service
-_prediction_service = None
 
-def get_prediction_service() -> PredictionService:
-    """Get or create the prediction service."""
-    global _prediction_service
-    if _prediction_service is None:
-        _prediction_service = PredictionService()
-    return _prediction_service
+def _normalize_occupation(data: dict) -> None:
+    """Map occupation values from frontend labels to backend labels."""
+    occupation = data.get('Occupation')
+    if occupation is not None:
+        data['Occupation'] = OCCUPATION_MAPPING.get(occupation, occupation)
+
+
+def _add_derived_financial_fields(data: dict) -> None:
+    income = to_float(data.get('Income', 0))
+    total_expenses = sum(to_float(data.get(field, 0)) for field in EXPENSE_FIELDS)
+    data['Disposable_Income'] = max(0, income - total_expenses)
+
+    for field in VARIABLE_EXPENSE_FIELDS:
+        savings_field = f'Potential_Savings_{field}'
+        if savings_field not in data:
+            data[savings_field] = to_float(data.get(field, 0)) * 0.1
+
+
+def _mark_user_onboarded(supabase: Client, user_id: str) -> None:
+    """Set onboarding_completed=true for a user, inserting profile if missing."""
+    update_result = (
+        supabase.table("user_profiles")
+        .update({"onboarding_completed": True})
+        .eq("user_id", user_id)
+        .execute()
+    )
+
+    if not update_result.data:
+        supabase.table("user_profiles").insert({
+            "user_id": user_id,
+            "onboarding_completed": True
+        }).execute()
+
+
+def _get_profile_status(supabase: Client, user_id: str) -> bool:
+    """Fetch onboarding status; create default profile when missing."""
+    result = (
+        supabase.table("user_profiles")
+        .select("onboarding_completed")
+        .eq("user_id", user_id)
+        .execute()
+    )
+
+    if result.data:
+        return bool(result.data[0].get("onboarding_completed", False))
+
+    try:
+        supabase.table("user_profiles").insert({
+            "user_id": user_id,
+            "onboarding_completed": False
+        }).execute()
+    except Exception as insert_err:
+        logger.warning(f"Could not create user profile: {insert_err}")
+
+    return False
 
 
 @onboarding_bp.route('/user/status', methods=['GET'])
@@ -69,37 +111,14 @@ def get_user_status():
     
     try:
         supabase = get_supabase_client()
-        
-        # Check user_profiles table
-        result = supabase.table("user_profiles")\
-            .select("onboarding_completed")\
-            .eq("user_id", user_id)\
-            .execute()
-        
-        if result.data and len(result.data) > 0:
-            return jsonify({
-                "onboarding_completed": result.data[0].get("onboarding_completed", False),
-                "is_demo": False
-            })
-        
-        # No profile found - user hasn't completed onboarding
-        # Try to create a profile entry for them
-        try:
-            supabase.table("user_profiles").insert({
-                "user_id": user_id,
-                "onboarding_completed": False
-            }).execute()
-        except Exception as insert_err:
-            logger.warning(f"Could not create user profile: {insert_err}")
-        
+        onboarding_completed = _get_profile_status(supabase, user_id)
         return jsonify({
-            "onboarding_completed": False,
+            "onboarding_completed": onboarding_completed,
             "is_demo": False
         })
-        
+
     except Exception as e:
         logger.error(f"Error checking user status: {e}")
-        # On error, assume not onboarded to be safe
         return jsonify({
             "onboarding_completed": False,
             "is_demo": False,
@@ -136,7 +155,6 @@ def complete_onboarding():
             "message": "User ID required"
         }), 401
     
-    # Get JSON data
     data = request.get_json()
     if not data:
         return jsonify({
@@ -144,41 +162,10 @@ def complete_onboarding():
             "error_code": "INVALID_REQUEST",
             "message": "Request body must be valid JSON"
         }), 400
-    
-    # Map occupation from frontend format to backend format
-    occupation_mapping = {
-        'Employed': 'Salaried',
-        'Self_Employed': 'Self_Employed',
-        'Student': 'Student',
-        'Retired': 'Retired',
-        # Also accept backend format directly
-        'Salaried': 'Salaried'
-    }
-    if 'Occupation' in data:
-        data['Occupation'] = occupation_mapping.get(data['Occupation'], data['Occupation'])
-    
-    # Calculate derived fields that the onboarding form doesn't provide
+
     try:
-        income = float(data.get('Income', 0))
-        
-        # Calculate total expenses
-        expense_fields = ['Rent', 'Loan_Repayment', 'Insurance', 'Groceries', 
-                         'Transport', 'Eating_Out', 'Entertainment', 'Utilities',
-                         'Healthcare', 'Education', 'Miscellaneous']
-        total_expenses = sum(float(data.get(field, 0)) for field in expense_fields)
-        
-        # Calculate disposable income
-        data['Disposable_Income'] = max(0, income - total_expenses)
-        
-        # Calculate potential savings (10% of each variable expense as potential savings)
-        variable_expense_fields = ['Groceries', 'Transport', 'Eating_Out', 'Entertainment',
-                                   'Utilities', 'Healthcare', 'Education', 'Miscellaneous']
-        for field in variable_expense_fields:
-            savings_field = f'Potential_Savings_{field}'
-            if savings_field not in data:
-                # Estimate 10% potential savings for each variable expense
-                data[savings_field] = float(data.get(field, 0)) * 0.1
-                
+        _normalize_occupation(data)
+        _add_derived_financial_fields(data)
     except (ValueError, TypeError) as e:
         logger.error(f"Error calculating derived fields: {e}")
         return jsonify({
@@ -187,48 +174,25 @@ def complete_onboarding():
             "message": f"Error calculating financial metrics: {str(e)}"
         }), 400
     
-    # Validate with Pydantic
+    prediction_request = PredictionRequest(**data)
+
     try:
-        prediction_request = PredictionRequest(**data)
-    except PydanticValidationError as e:
-        logger.warning(f"Onboarding validation failed for user {user_id}: {e.errors()}")
-        return jsonify(format_validation_error(e)), 400
-    
-    try:
-        # Get prediction from ML models
-        service = get_prediction_service()
-        prediction_result = service.predict(prediction_request, user_id=user_id)
-        
-        # Mark user as onboarded
+        prediction_result = PredictionService().predict(prediction_request, user_id=user_id)
+
         supabase = get_supabase_client()
-        
-        # Update or insert user profile
         try:
-            # Try update first
-            update_result = supabase.table("user_profiles")\
-                .update({"onboarding_completed": True})\
-                .eq("user_id", user_id)\
-                .execute()
-            
-            # If no rows updated, insert
-            if not update_result.data or len(update_result.data) == 0:
-                supabase.table("user_profiles").insert({
-                    "user_id": user_id,
-                    "onboarding_completed": True
-                }).execute()
-                
+            _mark_user_onboarded(supabase, user_id)
         except Exception as profile_err:
             logger.warning(f"Could not update user profile: {profile_err}")
-            # Continue anyway - prediction was saved
-        
+
         logger.info(f"User {user_id} completed onboarding")
-        
+
         return jsonify({
             "success": True,
             "onboarding_completed": True,
             "prediction": prediction_result
         })
-        
+
     except Exception as e:
         logger.error(f"Error during onboarding: {e}")
         return jsonify({

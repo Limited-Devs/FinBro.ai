@@ -101,14 +101,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                         localStorage.removeItem('finbro_demo_mode');
                         setIsDemo(false);
 
-                        // Check onboarding status when user logs in
-                        try {
-                            const status = await onboardingAPI.getStatus();
-                            setOnboardingCompletedState(status.onboarding_completed);
-                        } catch (error) {
-                            console.error('Error checking onboarding status:', error);
-                            setOnboardingCompletedState(false);
-                        }
+                        const status = await onboardingAPI.getStatus();
+                        setOnboardingCompletedState(status.onboarding_completed);
                     } else {
                         // User logged out
                         setOnboardingCompletedState(false);

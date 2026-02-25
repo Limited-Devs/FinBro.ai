@@ -9,7 +9,9 @@ import { formatNumber, formatPercent, safeNumber } from '@/services/utils'
 
 const Analytics = () => {
   const { data: userData, isLoading, error } = useUserData()
-  const { data: trendsData, isLoading: trendsLoading } = useTrendsData(6)
+  const { data: trendsData } = useTrendsData(6)
+  const predictions = userData?.predictions ?? []
+  const latestPrediction = predictions[predictions.length - 1]
 
   if (isLoading) {
     return (
@@ -20,7 +22,7 @@ const Analytics = () => {
     )
   }
 
-  if (error || !userData?.predictions?.[0]) {
+  if (error || !latestPrediction) {
     return (
       <div className="p-6 space-y-6 animate-fade-in">
         <div className="flex flex-col space-y-2">
@@ -33,9 +35,8 @@ const Analytics = () => {
     )
   }
 
-  const prediction = userData.predictions[0]
+  const prediction = latestPrediction
   const input = prediction.input
-  const output = prediction.output
 
   // Calculate potential savings data from the API response
   const potentialSavingsData = [

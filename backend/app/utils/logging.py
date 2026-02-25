@@ -1,11 +1,4 @@
-"""
-Structured logging setup for FinBro.ai.
 
-Features:
-- JSON or text format based on environment
-- Request correlation IDs
-- Configurable log levels
-"""
 import logging
 import sys
 import json

@@ -187,8 +187,10 @@ Team-lost_not_found/
 │
 ├── backend/
 │   ├── app.py              # Flask API server
-│   ├── chatBot.py          # Gemini AI integration
-│   ├── database.py         # Supabase service
+│   ├── app/
+│   │   ├── api/routes/     # Route handlers (chat, onboarding, prediction)
+│   │   ├── services/       # Business logic (chat/prediction)
+│   │   └── repositories/   # Supabase + fallback data access
 │   └── readme.md           # API documentation
 │
 ├── model/
@@ -226,11 +228,14 @@ Team-lost_not_found/
 ### Backend to Supabase
 
 ```python
-class DatabaseService:
-    """Service for Supabase operations"""
-    @staticmethod
-    def create_prediction(data):
-        return supabase.table('predictions').insert(data).execute()
+class PredictionRepository:
+  def create(self, input_data, output_data, user_id=None):
+    payload = {
+      "input_data": input_data,
+      "output_data": output_data,
+      "user_id": user_id,
+    }
+    return self.supabase.table('predictions').insert(payload).execute()
 ```
 
 ### Frontend to Supabase

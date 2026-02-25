@@ -1,11 +1,3 @@
-"""
-Pydantic schemas for request/response validation.
-
-Provides:
-- Input validation with meaningful error messages
-- Type coercion for API inputs
-- Response serialization
-"""
 from typing import Optional, Literal, Dict, Any, List
 from pydantic import BaseModel, Field, field_validator, model_validator
 from enum import Enum
@@ -41,8 +33,8 @@ class PredictionRequest(BaseModel):
     Income: float = Field(..., gt=0, description="Monthly income (must be positive)")
     Age: int = Field(..., ge=18, le=100, description="Age (18-100)")
     Dependents: int = Field(..., ge=0, le=20, description="Number of dependents")
-    Occupation: str = Field(..., description="Occupation type")
-    City_Tier: str = Field(..., description="City tier classification")
+    Occupation: Occupation = Field(..., description="Occupation type")
+    City_Tier: CityTier = Field(..., description="City tier classification")
     
     # Monthly expenses
     Rent: float = Field(..., ge=0, description="Monthly rent")
@@ -71,21 +63,7 @@ class PredictionRequest(BaseModel):
     Potential_Savings_Education: float = Field(..., ge=0)
     Potential_Savings_Miscellaneous: float = Field(..., ge=0)
     
-    @field_validator('Occupation')
-    @classmethod
-    def validate_occupation(cls, v: str) -> str:
-        valid = ['Salaried', 'Self_Employed', 'Student', 'Retired']
-        if v not in valid:
-            raise ValueError(f"Occupation must be one of: {', '.join(valid)}")
-        return v
-    
-    @field_validator('City_Tier')
-    @classmethod
-    def validate_city_tier(cls, v: str) -> str:
-        valid = ['Tier_1', 'Tier_2', 'Tier_3']
-        if v not in valid:
-            raise ValueError(f"City_Tier must be one of: {', '.join(valid)}")
-        return v
+
     
     @model_validator(mode='after')
     def validate_expenses(self) -> 'PredictionRequest':

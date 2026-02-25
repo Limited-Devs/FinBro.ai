@@ -182,3 +182,5 @@ model/xgboost_train/model_metadata.json
 model/xgboost_train/feature_columns.json
 model/xgboost_train/train.py
 backend/migrations/001_user_profiles.sql
+
+.github/skills
